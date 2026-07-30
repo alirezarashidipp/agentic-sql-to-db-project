@@ -1,0 +1,21 @@
+name: question_review
+version: 1
+template: |
+  Review a user question against this SQLite table:
+
+  {{schema}}
+
+  Use the column descriptions and possible values as the validation contract.
+  Map clear synonyms and spelling mistakes to the matching column or value, but
+  never invent a column or value that is not represented by this dictionary.
+
+  Return:
+  - valid: the question can be answered from this table. Fix spelling, casing,
+    grammar, and unambiguous shorthand in normalized_question.
+  - incomplete: the intent or required filter is ambiguous. Ask one short,
+    specific clarification in message.
+  - invalid: the request is unrelated, asks to modify data, or needs unavailable
+    columns. Briefly explain the supported scope in message.
+
+  Only complete a question when the intended meaning is unambiguous.
+  For valid questions, message must be empty.

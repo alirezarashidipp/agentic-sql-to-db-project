@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b12">
+  <title>SQL Assistant</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3c4.4 0 8 1.6 8 3.5S16.4 10 12 10 4 8.4 4 6.5 7.6 3 12 3Z"/>
+            <path d="M4 6.5v5C4 13.4 7.6 15 12 15s8-1.6 8-3.5v-5"/>
+            <path d="M4 11.5v5C4 18.4 7.6 20 12 20s8-1.6 8-3.5v-5"/>
+          </svg>
+        </span>
+        Schema-aware assistant
+      </div>
+
+      <h1 id="page-title">
+        Ask your database.
+        <span>Get a grounded answer.</span>
+      </h1>
+      <p class="lead">
+        Plain English becomes validated SQL through a small, transparent
+        LangGraph workflow.
+      </p>
+
+      <div class="schema">
+        <div class="schema-header">
+          <span id="schema-table-name">Loading schema…</span>
+          <span class="schema-live"><i></i> SQLite</span>
+        </div>
+        <div id="schema-fields" class="fields"></div>
+      </div>
+
+      <p class="stack">FastAPI <i></i> LangGraph <i></i> OpenAI <i></i> SQLite</p>
+    </section>
+
+    <section class="workspace" aria-label="Database question workspace">
+      <header class="workspace-header">
+        <div>
+          <span class="eyebrow">Question workflow</span>
+          <h2 id="workspace-title">Explore your data</h2>
+        </div>
+        <span class="ready"><i></i> Ready</span>
+      </header>
+
+      <ol class="workflow" aria-label="Processing steps">
+        <li data-step="review">
+          <span class="step-number">01</span>
+          <span>Validate</span>
+        </li>
+        <li data-step="sql">
+          <span class="step-number">02</span>
+          <span>Write SQL</span>
+        </li>
+        <li data-step="database">
+          <span class="step-number">03</span>
+          <span>Query</span>
+        </li>
+        <li data-step="answer">
+          <span class="step-number">04</span>
+          <span>Answer</span>
+        </li>
+      </ol>
+
+      <form id="ask-form">
+        <div class="prompt-meta">
+          <label for="question">Ask in plain English</label>
+          <span>Ctrl + Enter to run</span>
+        </div>
+        <div class="composer">
+          <textarea
+            id="question"
+            rows="3"
+            required
+            placeholder="Ask a question about your data…"
+          ></textarea>
+          <button id="submit" type="submit">
+            <span class="button-label">Run question</span>
+            <span class="spinner" aria-hidden="true"></span>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <div id="examples" class="examples">
+        <span>Try an example</span>
+      </div>
+
+      <section id="result" class="result" aria-live="polite" hidden>
+        <header class="result-header">
+          <span>Response</span>
+          <span id="result-status" class="status">Processing</span>
+        </header>
+        <p id="normalized" hidden></p>
+        <p id="answer"></p>
+
+        <details id="debug">
+          <summary>
+            <span>Inspect SQL and raw rows</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m6 8 4 4 4-4"/>
+            </svg>
+          </summary>
+          <div class="debug-grid">
+            <article>
+              <span>Generated SQL</span>
+              <pre id="sql"></pre>
+            </article>
+            <article>
+              <span>SQLite result</span>
+              <pre id="rows"></pre>
+            </article>
+          </div>
+        </details>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
