@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    env_file: .env.local
+    environment:
+      DATABASE_PATH: /data/employees.db
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - sqlite_data:/data
+
+volumes:
+  sqlite_data:

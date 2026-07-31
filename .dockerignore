@@ -1,0 +1,11 @@
+.git
+.venv
+venv
+env
+.env*
+__pycache__
+*.py[cod]
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

@@ -1,151 +1,151 @@
 # Employee SQL Assistant
 
-A learning-focused FastAPI project that uses LangGraph to validate an employee
-question, complete safe shorthand, query SQLite, and generate a grounded answer.
+Ask a question in plain English, turn it into guarded SQLite, and return an
+answer grounded in the query result.
 
-## Run
+This learning project keeps the full path visible: FastAPI receives the
+question, LangGraph validates and completes it, OpenAI produces structured
+output, SQLite runs a read-only query, and a small HTML/CSS/JavaScript frontend
+shows the result.
+
+## What it does
+
+1. Checks whether a question is valid, incomplete, or outside the table scope.
+2. Normalizes clear spelling mistakes and shorthand using the live schema.
+3. Generates one SQLite `SELECT` query.
+4. Applies application and SQLite-level read-only guardrails.
+5. Answers from the returned rows only.
+
+Try questions such as:
+
+- `How many coders?`
+- `Data engineers in MRM`
+- `How many?` — asks for the missing detail instead of guessing.
+
+## Quick start
+
+Requirements:
+
+- Python 3.14
+- [uv](https://docs.astral.sh/uv/)
+- An OpenAI API key
 
 ```powershell
 Copy-Item .env.example .env.local
-# Add your OPENAI_API_KEY to .env.local
-uv sync
+# Add OPENAI_API_KEY to .env.local
+uv sync --locked
 uv run python main.py
 ```
 
-Open <http://127.0.0.1:8000>.
+Open <http://127.0.0.1:8000>. Interactive API documentation is available at
+<http://127.0.0.1:8000/docs>.
 
-The app reads `OPENAI_API_KEY` from `.env.local` and creates `employees.db`
-with sample employees on first run.
+## Docker
+
+Create `.env.local` as shown above, then run:
+
+```powershell
+docker compose up --build
+```
+
+Open <http://127.0.0.1:8000>. Compose stores its SQLite database in a named
+volume and does not bake `.env.local` into the image.
 
 ## Configuration
 
-Runtime settings live in `.env.local`:
+All runtime settings are required and live in `.env.local`:
 
-```dotenv
-OPENAI_MODEL=gpt-5.6-sol
-DATABASE_PATH=employees.db
-TABLE_NAME=employees
-MAX_QUESTION_LENGTH=500
-MAX_RESULT_ROWS=100
-```
+| Setting | Purpose | Example |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | OpenAI authentication | Keep secret |
+| `OPENAI_MODEL` | Model used by OpenAI-backed workflow nodes | `gpt-5.6-sol` |
+| `DATABASE_PATH` | SQLite file, relative to the project or absolute | `employees.db` |
+| `TABLE_NAME` | Single table exposed to the assistant | `employees` |
+| `MAX_QUESTION_LENGTH` | API input limit | `500` |
+| `MAX_RESULT_ROWS` | Maximum rows returned from SQLite | `100` |
 
-`DATABASE_PATH` may be workspace-relative or absolute. `TABLE_NAME` must be a
-simple SQLite identifier containing letters, numbers, or underscores.
-
-## Workflow
+## Request flow
 
 ```text
-START
-  -> load_schema
-  -> review_question
-       | valid
-       v
-     generate_sql -> run_sql -> generate_answer -> END
-       |
-       + incomplete or invalid ---------------------> END
+question
+  -> load live schema and COLUMN_GUIDE
+  -> validate / normalize question
+       -> incomplete or invalid: return a short explanation
+       -> valid: generate SELECT
+  -> validate SQL
+  -> run read-only SQLite query
+  -> generate grounded answer
 ```
 
-The review node combines the real SQLite types with the `COLUMN_GUIDE` data
-dictionary in `app/schema.py`. That dictionary explains every column and its
-possible values, so validation can fix unambiguous spelling or shorthand, ask a
-clarification for incomplete questions, and reject unsupported requests.
+Prompts live in `prompts/*.yml`; table-specific definitions live in
+`app/schema.py`. The frontend discovers the configured table through
+`GET /schema`, so it does not hardcode employee columns.
 
-## Structure
+## Safety boundary
+
+Generated SQL is untrusted. The backend accepts a single `SELECT` against the
+configured table, enables `PRAGMA query_only`, and installs a SQLite authorizer
+that denies other tables and write operations. These layers must remain in
+place even when prompts improve.
+
+This is still a learning/local application: `/ask` has no authentication, rate
+limiting, or query timeout. Do not expose it directly to the public internet.
+See [docs/security.md](docs/security.md) for the threat model.
+
+## Project map
 
 ```text
 .
-|-- app/
-|   |-- api.py        # FastAPI routes
-|   |-- config.py     # environment-driven runtime settings
-|   |-- database.py   # generic SQLite access and safe queries
-|   |-- prompts.py    # cached YAML prompt loader
-|   |-- schema.py     # DDL, seed rows, data dictionary, examples
-|   `-- workflow.py   # LangGraph state, nodes, and edges
-|-- prompts/
-|   |-- question_review.yml
-|   |-- sql_generation.yml
-|   `-- answer.yml
-|-- static/
-|   |-- index.html
-|   |-- style.css
-|   `-- app.js
-|-- main.py           # local entry point and self-check
-|-- employees.db
-`-- .env.local
+|-- app/                    # FastAPI, LangGraph, config, and SQLite code
+|-- prompts/                # Versioned prompt templates
+|-- static/                 # HTML, CSS, and JavaScript frontend
+|-- tests/                  # Standard-library regression tests
+|-- docs/                   # Architecture, API, database, deployment, security
+|   `-- adr/                # Architecture decision records
+|-- skills/                 # Project-local AI maintenance skill
+|-- workflows/              # Human-readable AI workflow contract
+|-- .github/workflows/      # Continuous integration
+|-- AGENTS.md               # Rules for coding agents
+|-- PROJECT_STATE.md        # Current capabilities and limits
+|-- Dockerfile
+|-- docker-compose.yml
+|-- Makefile
+|-- main.py
+`-- employees.db            # Tracked sample data asset
 ```
 
-## Import or update employee data
+Directories for migrations, benchmarks, memory, or scripts are intentionally
+absent until the project has real code that belongs in them.
 
-This learning version does not automatically import CSV or JSON files. Demo
-rows are defined by `SEED_ROWS` in `app/schema.py`.
+## Change the data
 
-### Add new employees
-
-1. Add one tuple per employee to `SEED_ROWS` in `app/schema.py`:
-
-   ```python
-   (1011, "MSW", "CODER", "SOFTWARE ENGINEER"),
-   ```
-
-2. If the row introduces a new department, status, or title, update its
-   `possible_values` in `app/schema.py`.
-3. Restart the application. `INSERT OR IGNORE` adds rows with new
-   `EMPLOYEE_ID` values without duplicating existing employees.
-
-`EMPLOYEE_ID` is the primary key. Changing a tuple that uses an ID already in
-`employees.db` will not update that row because `INSERT OR IGNORE` preserves the
-existing record.
-
-### Replace or correct existing data
-
-For a clean replacement:
-
-1. Stop the application.
-2. Rename the configured SQLite file to keep it as a backup.
-3. Replace `SEED_ROWS` in `app/schema.py`.
-4. Update `COLUMN_GUIDE` in the same file.
-5. Start the application. A new database will be created and seeded.
-
-### Use another SQLite data asset
-
-To point the application at an existing SQLite file:
+To use another SQLite asset:
 
 1. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
-2. In `app/schema.py`, update `COLUMN_GUIDE` so its keys exactly match the
-   selected table's columns.
-3. Update `EXAMPLE_QUESTIONS`.
-4. Set `SEED_ROWS = ()` when the external database should not receive demo
-   rows. `TABLE_DDL` may be empty when the table already exists.
-5. Restart the application.
+2. Update `TABLE_DDL`, `SEED_SQL`, `SEED_ROWS`, `COLUMN_GUIDE`, and
+   `EXAMPLE_QUESTIONS` in `app/schema.py` as needed.
+3. Make every `COLUMN_GUIDE` key exactly match a live table column.
+4. Restart the app.
 
-No changes are required in `database.py`, `workflow.py`, the YAML prompts, or
-the frontend. The `/schema` endpoint introspects the configured SQLite table,
-and the frontend renders its columns automatically.
+Set `SEED_ROWS = ()` and leave `TABLE_DDL` empty when an existing database must
+not be modified. See [docs/database.md](docs/database.md) for imports, schema
+changes, and database replacement.
 
-### Add or change a column
-
-Update all of these:
-
-| Change | File |
-| --- | --- |
-| SQLite column and constraints | `TABLE_DDL` in `app/schema.py` |
-| Seed insert columns | `SEED_SQL` in `app/schema.py` |
-| Value in every seed row | `SEED_ROWS` in `app/schema.py` |
-| Meaning and possible values | `COLUMN_GUIDE` in `app/schema.py` |
-
-Then recreate the configured SQLite file, because this project intentionally
-does not include a migration system.
-
-The YAML prompts normally need no data-value changes: the live column
-dictionary replaces `{{schema}}` at runtime. Edit files in `prompts/` only when
-the validation, SQL-generation, or answer behavior itself should change.
-
-This modularity swaps SQLite files and tables. Replacing SQLite with another
-database engine such as PostgreSQL still requires a new database adapter and
-driver.
-
-Run the local check without calling OpenAI:
+## Verify changes
 
 ```powershell
+uv run python -m unittest discover -s tests -v
 uv run python main.py --check
+node --check static/app.js
 ```
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [API](docs/api.md)
+- [Database and data imports](docs/database.md)
+- [Deployment](docs/deployment.md)
+- [Security](docs/security.md)
+- [Architecture decisions](docs/adr/0001-schema-guided-read-only-sql.md)
+- [Contributing](CONTRIBUTING.md)
+- [Current project state](PROJECT_STATE.md)

@@ -1,5 +1,6 @@
 import re
 import sqlite3
+from contextlib import closing
 from functools import cache
 
 from .config import DB_PATH, MAX_RESULT_ROWS, TABLE_NAME
@@ -11,7 +12,7 @@ TABLE_REFERENCE = re.compile(
 
 
 def initialize_database() -> None:
-    with sqlite3.connect(DB_PATH) as connection:
+    with closing(sqlite3.connect(DB_PATH)) as connection, connection:
         if TABLE_DDL.strip():
             connection.execute(TABLE_DDL.format(table_name=TABLE_NAME))
         if SEED_ROWS:
@@ -25,7 +26,7 @@ def initialize_database() -> None:
 
 @cache
 def table_schema() -> list[dict]:
-    with sqlite3.connect(DB_PATH) as connection:
+    with closing(sqlite3.connect(DB_PATH)) as connection:
         columns = connection.execute(
             f'PRAGMA table_info("{TABLE_NAME}")'
         ).fetchall()
@@ -83,7 +84,7 @@ def validate_sql(sql: str) -> str:
 
 def execute_sql(sql: str) -> list[dict]:
     sql = validate_sql(sql)
-    with sqlite3.connect(DB_PATH) as connection:
+    with closing(sqlite3.connect(DB_PATH)) as connection:
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA query_only = ON")
 
