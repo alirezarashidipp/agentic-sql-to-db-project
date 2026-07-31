@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 .env*
 !.env.example
-employees.db*
+
 
 # Virtual environments
 .venv
