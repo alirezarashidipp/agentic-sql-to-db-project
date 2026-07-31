@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b12">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>SQL Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/tokens.css">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/chart.js" defer></script>
   <script src="/static/app.js" defer></script>
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-
   <main class="shell">
     <section class="hero" aria-labelledby="page-title">
       <div class="brand">
@@ -56,19 +56,19 @@
       </header>
 
       <ol class="workflow" aria-label="Processing steps">
-        <li data-step="review">
+        <li data-step="review" aria-label="Step 1: Validate">
           <span class="step-number">01</span>
           <span>Validate</span>
         </li>
-        <li data-step="sql">
+        <li data-step="sql" aria-label="Step 2: Write SQL">
           <span class="step-number">02</span>
           <span>Write SQL</span>
         </li>
-        <li data-step="database">
+        <li data-step="database" aria-label="Step 3: Query database">
           <span class="step-number">03</span>
           <span>Query</span>
         </li>
-        <li data-step="answer">
+        <li data-step="answer" aria-label="Step 4: Answer">
           <span class="step-number">04</span>
           <span>Answer</span>
         </li>

@@ -19,21 +19,27 @@ const schemaTableName = document.querySelector("#schema-table-name");
 const schemaFields = document.querySelector("#schema-fields");
 const workspaceTitle = document.querySelector("#workspace-title");
 const examples = document.querySelector("#examples");
-const chartColors = [
-  "#8b5cf6", "#22d3ee", "#f472b6", "#f59e0b",
-  "#34d399", "#60a5fa", "#fb7185", "#a3e635",
-];
+const chartColors = Array.from(
+  {length: 8},
+  (_, index) => `var(--color-chart-${index + 1})`,
+);
 const numberFormat = new Intl.NumberFormat();
 let chartData = null;
 
 function setWorkflow(status) {
   const reviewOnly = status === "incomplete" || status === "invalid";
   steps.forEach((step, index) => {
-    step.classList.toggle("is-active", status === "loading" && index === 0);
+    const isActive = status === "loading" && index === 0;
+    step.classList.toggle("is-active", isActive);
     step.classList.toggle(
       "is-complete",
       status === "valid" || (reviewOnly && index === 0),
     );
+    if (isActive) {
+      step.setAttribute("aria-current", "step");
+    } else {
+      step.removeAttribute("aria-current");
+    }
   });
 }
 
@@ -174,6 +180,7 @@ question.addEventListener("keydown", (event) => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   submit.disabled = true;
+  question.disabled = true;
   submit.classList.add("is-loading");
   buttonLabel.textContent = "Thinking";
   result.hidden = false;
@@ -218,6 +225,7 @@ form.addEventListener("submit", async (event) => {
     setWorkflow("error");
   } finally {
     submit.disabled = false;
+    question.disabled = false;
     submit.classList.remove("is-loading");
     buttonLabel.textContent = "Run question";
   }
