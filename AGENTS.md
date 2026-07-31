@@ -31,6 +31,7 @@ uv run python main.py
 uv run python -m unittest discover -s tests -v
 uv run python main.py --check
 node --check static/app.js
+node --test tests/test_chart.cjs
 docker compose config --quiet
 ```
 

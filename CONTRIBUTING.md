@@ -15,6 +15,7 @@ Add your own `OPENAI_API_KEY` only to `.env.local`.
 uv run python -m unittest discover -s tests -v
 uv run python main.py --check
 node --check static/app.js
+node --test tests/test_chart.cjs
 ```
 
 Keep changes focused and update the matching document when behavior changes.

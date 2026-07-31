@@ -10,7 +10,7 @@ access, and presentation separate.
 
 | Component | Responsibility |
 | --- | --- |
-| `static/` | Browser interface and result inspection |
+| `static/` | Browser interface, result-shape inspection, and native charts |
 | `app/api.py` | FastAPI routes, validation, and HTTP error mapping |
 | `app/workflow.py` | LangGraph state, nodes, and routing |
 | `prompts/` | Versioned question-review, SQL, and answer templates |
@@ -31,6 +31,8 @@ flowchart LR
     Guard --> DB["Query-only SQLite + authorizer"]
     DB --> Answer["Generate grounded answer"]
     Answer --> UI
+    UI --> Shape["Inspect returned row shape"]
+    Shape -->|"compatible two-column result"| Chart["Offer Bar / Pie views"]
 ```
 
 The workflow state is a `TypedDict`. `review_question` is the only conditional
@@ -46,6 +48,9 @@ generation, execution, and answer generation.
 
 The API exposes schema metadata to the frontend, which makes the UI independent
 of the current table's column names.
+
+Chart eligibility is deterministic browser logic. It uses returned rows only,
+does not add a model call, and leaves the `/ask` response contract unchanged.
 
 ## Boundaries
 

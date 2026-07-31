@@ -11,6 +11,7 @@ check:
 
 test:
 	uv run python -m unittest discover -s tests -v
+	node --test tests/test_chart.cjs
 
 docker-up:
 	docker compose up --build
