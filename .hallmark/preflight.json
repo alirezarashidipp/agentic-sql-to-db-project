@@ -1,0 +1,9 @@
+{
+  "date": "2026-07-31",
+  "framework": "Vanilla HTML, CSS, and JavaScript",
+  "fonts": "System sans-serif and monospace stacks",
+  "palette": "Dark neutral surfaces with violet and cyan accents",
+  "motion": "CSS transitions and keyframes only",
+  "spacing": "Existing responsive workbench layout",
+  "design_file": null
+}
