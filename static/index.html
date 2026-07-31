@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#090b12">
   <title>SQL Assistant</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/chart.js" defer></script>
   <script src="/static/app.js" defer></script>
 </head>
 <body>
@@ -106,6 +107,19 @@
         </header>
         <p id="normalized" hidden></p>
         <p id="answer"></p>
+
+        <div id="chart-actions" class="chart-actions" hidden>
+          <span>Visualize this result</span>
+          <div class="chart-buttons" role="group" aria-label="Available chart types">
+            <button type="button" data-chart="bar" aria-pressed="false">Bar chart</button>
+            <button type="button" data-chart="pie" aria-pressed="false">Pie chart</button>
+          </div>
+        </div>
+
+        <section id="chart-panel" class="chart-panel" aria-labelledby="chart-title" hidden>
+          <h3 id="chart-title"></h3>
+          <div id="chart-output"></div>
+        </section>
 
         <details id="debug">
           <summary>

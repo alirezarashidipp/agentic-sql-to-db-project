@@ -15,10 +15,12 @@ shows the result.
 3. Generates one SQLite `SELECT` query.
 4. Applies application and SQLite-level read-only guardrails.
 5. Answers from the returned rows only.
+6. Offers Bar or Pie views only when the returned rows have a compatible shape.
 
 Try questions such as:
 
 - `How many coders?`
+- `How many employees are in each department?`
 - `Data engineers in MRM`
 - `How many?` — asks for the missing detail instead of guessing.
 
@@ -75,6 +77,8 @@ question
   -> validate SQL
   -> run read-only SQLite query
   -> generate grounded answer
+  -> inspect returned rows in the browser
+       -> compatible two-column result: offer valid Bar / Pie views
 ```
 
 Prompts live in `prompts/*.yml`; table-specific definitions live in
@@ -137,6 +141,7 @@ changes, and database replacement.
 uv run python -m unittest discover -s tests -v
 uv run python main.py --check
 node --check static/app.js
+node --test tests/test_chart.cjs
 ```
 
 ## Documentation

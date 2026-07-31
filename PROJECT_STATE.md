@@ -18,7 +18,8 @@ the generated SQL, and get an answer grounded in the database result.
 - SQL has application validation, query-only mode, and table-scoped
   authorization.
 - The frontend renders columns and examples from `GET /schema`.
-- A standard-library test suite covers database setup and SQL guardrails.
+- The frontend offers native Bar/Pie views after compatible two-column results.
+- Standard-library tests cover database guardrails and chart eligibility.
 - Docker Compose runs the app with a persistent SQLite volume.
 - GitHub Actions is configured to run deterministic checks without calling
   OpenAI.
@@ -39,6 +40,9 @@ Container deployments create and seed a separate database in their volume.
 - There is no migration system; schema changes require database recreation or
   an externally managed database.
 - Each request is independent; there is no conversation memory.
+- Charts require 2-20 rows with one unique text-label column and one numeric
+  column whose values are non-negative and not all zero. Pie requires 2-8
+  strictly positive values.
 - Valid questions make three model calls; incomplete or invalid questions make
   one.
 - There are no automated LLM accuracy evaluations yet.

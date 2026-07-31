@@ -4,6 +4,7 @@ Notable changes are recorded here.
 
 ## Unreleased
 
+- Added conditional post-result Bar and Pie charts without a chart dependency.
 - Added focused architecture, API, deployment, database, security, and ADR
   documentation.
 - Added agent and project-state context.
