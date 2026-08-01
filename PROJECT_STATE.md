@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-31
+Last updated: 2026-08-02
 
 ## Status
 
@@ -14,13 +14,15 @@ the generated SQL, and get an answer grounded in the database result.
 - LangGraph routes valid, incomplete, and invalid questions.
 - OpenAI structured output validates questions and generates SQL.
 - YAML files hold all LLM prompt text.
-- SQLite schema introspection is combined with `COLUMN_GUIDE`.
+- A pre-provisioned SQLite file is opened read-only and introspected with
+  `COLUMN_GUIDE`.
 - SQL has application validation, query-only mode, and table-scoped
   authorization.
 - The frontend renders columns and examples from `GET /schema`.
 - The frontend offers native Bar/Pie views after compatible two-column results.
 - Standard-library tests cover database guardrails and chart eligibility.
-- Docker Compose runs the app with a persistent SQLite volume.
+- Python dependencies install with standard `pip` into a local `.venv`.
+- Docker and Compose include the existing fictional SQLite asset.
 - GitHub Actions is configured to run deterministic checks without calling
   OpenAI.
 
@@ -28,11 +30,11 @@ the generated SQL, and get an answer grounded in the database result.
 
 - Database asset: `employees.db`
 - Table: `employees`
-- Columns: `EMPLOYEE_ID`, `DEPARTMENT`, `STATUS`, `TITLE`
-- Seed rows: 10 sample employees
+- Columns: `EMPLOYEE_ID`, `EMPLOYEE_NAME`, `DEPARTMENT`, `STATUS`, `TITLE`
+- Rows: 100 fictional sample employees
 
 `employees.db` is intentionally tracked because it contains demo data only.
-Container deployments create and seed a separate database in their volume.
+The application and container never create, migrate, or seed it.
 
 ## Deliberate limits
 

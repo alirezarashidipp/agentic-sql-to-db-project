@@ -2,6 +2,9 @@
 
 Review date: 2026-07-31 · Branch: `codex/initial-project` · 3 commits, 20 files uncommitted
 
+> Historical review snapshot. Some findings are now resolved; use
+> `PROJECT_STATE.md` for the current architecture and limitations.
+
 ---
 
 ## First, corrections to your assumptions
@@ -14,7 +17,7 @@ Review date: 2026-07-31 · Branch: `codex/initial-project` · 3 commits, 20 file
 
 And three things you didn't mention that matter more than most of the list below:
 
-- **`pydantic` is imported but not declared.** `app/workflow.py` and `app/api.py` both `from pydantic import BaseModel`, but `pyproject.toml` lists only fastapi, langgraph, openai, pyyaml, uvicorn. It works today purely because FastAPI drags pydantic in transitively. The day a resolver picks a fastapi build that vendors it differently, the app breaks with no code change. This is a live bug.
+- **`pydantic` was imported but not declared.** `app/workflow.py` and `app/api.py` both `from pydantic import BaseModel`, but the old dependency manifest omitted it. It worked only because FastAPI installed pydantic transitively.
 - **`employees.db` is committed to git** (commit `841b975`, "Track sample employee database"). A mutable SQLite binary in version control produces unmergeable conflicts and grows history forever.
 - **20 files are modified and uncommitted** on a non-main branch. Whatever the current state of this code is, it exists only on your disk.
 
@@ -22,8 +25,8 @@ And three things you didn't mention that matter more than most of the list below
 
 ## Tier 0 — Fix before anything else
 
-**1. Declare `pydantic` in `pyproject.toml`**
-Why: relying on a transitive dependency for types that appear in your public API contract is a silent-breakage bug waiting on a lockfile refresh.
+**1. Declare `pydantic` as a direct dependency**
+Why: relying on a transitive dependency for types that appear in your public API contract is a silent-breakage bug waiting on a dependency upgrade.
 
 **2. Untrack `employees.db`; add it to `.gitignore`**
 Why: it's a generated artifact — `initialize_database()` recreates it from `TABLE_DDL` + `SEED_ROWS` on every boot. Tracking it means every run dirties the working tree and every branch merge conflicts on a binary blob.
@@ -133,13 +136,13 @@ Why: you use `TypedDict`, `NotRequired`, and `Literal` heavily in `workflow.py` 
 **27. Pre-commit hooks**
 Why: catches #1, #2 and #25 locally instead of in CI. Add a large-file hook and `employees.db` never gets recommitted.
 
-**28. Dev dependency group in `pyproject.toml`**
-Why: pytest/ruff/mypy shouldn't ship to production. `[dependency-groups]` keeps `uv sync` honest.
+**28. Separate development requirements**
+Why: pytest/ruff/mypy should not ship to production. Add `requirements-dev.txt` only when those tools are adopted.
 
 **29. Dependabot or Renovate**
-Why: `openai>=2` and `langgraph>=1.0` are fast-moving, and your minimum bounds are loose enough that `uv sync` can pull a breaking release without warning.
+Why: OpenAI and LangGraph are fast-moving. Pinned versions still need reviewed, automated upgrades.
 
-**30. Justify or relax `requires-python = ">=3.14"`**
+**30. Justify or relax the Python 3.14 requirement**
 Why: 3.14 is aggressive and undocumented. If nothing actually needs it, you've excluded most deployment targets for no reason. If something does, say what in an ADR.
 
 ---

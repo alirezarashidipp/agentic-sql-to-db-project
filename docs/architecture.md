@@ -14,8 +14,8 @@ access, and presentation separate.
 | `app/api.py` | FastAPI routes, validation, and HTTP error mapping |
 | `app/workflow.py` | LangGraph state, nodes, and routing |
 | `prompts/` | Versioned question-review, SQL, and answer templates |
-| `app/schema.py` | Dataset DDL, seed rows, column guide, and examples |
-| `app/database.py` | Schema introspection, SQL validation, and execution |
+| `app/schema.py` | Column guide and user-facing examples |
+| `app/database.py` | Existing-file validation, schema introspection, and guarded queries |
 | `app/config.py` | Required environment settings and OpenAI client |
 
 ## Request flow
@@ -42,7 +42,7 @@ generation, execution, and answer generation.
 ## Runtime sources of truth
 
 - Environment values: `.env.local`
-- Table contract: live SQLite metadata plus `COLUMN_GUIDE`
+- Table contract: pre-provisioned SQLite metadata plus `COLUMN_GUIDE`
 - Prompt behavior: `prompts/*.yml`
 - Workflow behavior: `app/workflow.py`
 
@@ -55,6 +55,7 @@ does not add a model call, and leaves the `/ask` response contract unchanged.
 ## Boundaries
 
 - FastAPI validates the question length before the graph runs.
+- SQLite is opened in URI read-only mode and is never created or seeded here.
 - Structured OpenAI output constrains review and SQL response shapes.
 - Generated SQL remains untrusted and passes through database guardrails.
 - Each request is stateless; no conversation history is stored.

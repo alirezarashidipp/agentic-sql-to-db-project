@@ -22,7 +22,13 @@ Example response:
       "name": "EMPLOYEE_ID",
       "type": "INTEGER PRIMARY KEY",
       "description": "Unique numeric identifier for one employee.",
-      "possible_values": "Integer IDs from 1001 to 1010 in the demo data."
+      "possible_values": "Integer IDs from 1001 to 1100 in the demo data."
+    },
+    {
+      "name": "EMPLOYEE_NAME",
+      "type": "TEXT NOT NULL",
+      "description": "Synthetic full name of the employee.",
+      "possible_values": "100 fictional demo names, such as AVA CARTER and LEO KOWALSKI."
     }
   ],
   "examples": ["How many coders?"],

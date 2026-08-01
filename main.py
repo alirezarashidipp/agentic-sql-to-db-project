@@ -2,12 +2,11 @@ import sys
 
 from app.api import app
 from app.config import TABLE_NAME
-from app.database import describe_table, execute_sql, initialize_database
+from app.database import describe_table, execute_sql
 from app.workflow import route_after_review
 
 
 def self_check() -> None:
-    initialize_database()
     schema = describe_table()
     assert TABLE_NAME in schema
     assert execute_sql(

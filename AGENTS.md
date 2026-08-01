@@ -12,24 +12,26 @@ Keep this project small, understandable, and safe for learning.
 ## Invariants
 
 - Prompts belong in `prompts/*.yml`, not Python strings.
-- Dataset-specific definitions belong in `app/schema.py`.
+- Dataset-specific column meaning and examples belong in `app/schema.py`.
 - `COLUMN_GUIDE` keys must exactly match the configured SQLite columns.
-- A column change must update `TABLE_DDL`, `SEED_SQL`, `SEED_ROWS`, and
-  `COLUMN_GUIDE`; recreate the database when its schema changes.
+- The SQLite file is provisioned outside this application; never create,
+  migrate, or seed it from runtime code.
+- A column change must update the external database and `COLUMN_GUIDE`, then
+  restart the application.
 - Do not weaken `validate_sql`, `PRAGMA query_only`, or the SQLite authorizer.
 - Keep SQL limited to the configured table and cap returned rows.
 - Keep the frontend dependency-free unless a real requirement demands more.
 - Never commit `.env.local`, API keys, virtual environments, or real employee
-  data. `employees.db` is intentionally tracked as sample-only data.
+  data. `employees.db` is intentionally tracked as a prebuilt sample asset.
 - Do not add empty directories or abstractions for future work.
 
 ## Commands
 
 ```powershell
-uv sync --locked
-uv run python main.py
-uv run python -m unittest discover -s tests -v
-uv run python main.py --check
+python -m pip install -r requirements.txt
+python main.py
+python -m unittest discover -s tests -v
+python main.py --check
 node --check static/app.js
 node --test tests/test_chart.cjs
 docker compose config --quiet

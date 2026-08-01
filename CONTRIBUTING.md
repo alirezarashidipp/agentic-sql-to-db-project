@@ -4,7 +4,9 @@
 
 ```powershell
 Copy-Item .env.example .env.local
-uv sync --locked
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
 Add your own `OPENAI_API_KEY` only to `.env.local`.
@@ -12,8 +14,8 @@ Add your own `OPENAI_API_KEY` only to `.env.local`.
 ## Before opening a pull request
 
 ```powershell
-uv run python -m unittest discover -s tests -v
-uv run python main.py --check
+python -m unittest discover -s tests -v
+python main.py --check
 node --check static/app.js
 node --test tests/test_chart.cjs
 ```
@@ -24,15 +26,10 @@ enough.
 
 ## Dataset changes
 
-A column change must update these values in `app/schema.py`:
-
-1. `TABLE_DDL`
-2. `SEED_SQL`
-3. `SEED_ROWS`
-4. `COLUMN_GUIDE`
-
-Recreate `employees.db`, verify it contains sample data only, and update
-`EXAMPLE_QUESTIONS` when user-facing examples change.
+Create or update the SQLite file outside this application. For a column change,
+update the external table and make `COLUMN_GUIDE` match its columns exactly.
+Verify `employees.db` contains sample data only, update `EXAMPLE_QUESTIONS`
+when needed, and restart the application after replacing the file.
 
 ## Security changes
 

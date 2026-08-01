@@ -12,7 +12,8 @@ employee records.
 2. Structured model output constrains validation status and SQL shape.
 3. `validate_sql()` accepts one comment-free `SELECT` that references the
    configured table.
-4. SQLite runs with `PRAGMA query_only = ON`.
+4. The existing SQLite file is opened with URI `mode=ro` and
+   `PRAGMA query_only = ON`.
 5. A SQLite authorizer denies reads from other tables and all SQLite write
    actions.
 6. `MAX_RESULT_ROWS` caps returned rows.

@@ -4,29 +4,22 @@ from contextlib import closing
 from functools import cache
 
 from .config import DB_PATH, MAX_RESULT_ROWS, TABLE_NAME
-from .schema import COLUMN_GUIDE, SEED_ROWS, SEED_SQL, TABLE_DDL
+from .schema import COLUMN_GUIDE
 
 TABLE_REFERENCE = re.compile(
     rf'(?is)\bFROM\s+(?:"{re.escape(TABLE_NAME)}"|{re.escape(TABLE_NAME)})(?=\s|$)'
 )
 
 
-def initialize_database() -> None:
-    with closing(sqlite3.connect(DB_PATH)) as connection, connection:
-        if TABLE_DDL.strip():
-            connection.execute(TABLE_DDL.format(table_name=TABLE_NAME))
-        if SEED_ROWS:
-            connection.executemany(
-                SEED_SQL.format(table_name=TABLE_NAME),
-                SEED_ROWS,
-            )
-    table_schema.cache_clear()
-    describe_table.cache_clear()
+def _connect_readonly() -> sqlite3.Connection:
+    if not DB_PATH.is_file():
+        raise ValueError(f"Database file does not exist: {DB_PATH}")
+    return sqlite3.connect(f"{DB_PATH.as_uri()}?mode=ro", uri=True)
 
 
 @cache
 def table_schema() -> list[dict]:
-    with closing(sqlite3.connect(DB_PATH)) as connection:
+    with closing(_connect_readonly()) as connection:
         columns = connection.execute(
             f'PRAGMA table_info("{TABLE_NAME}")'
         ).fetchall()
@@ -84,7 +77,7 @@ def validate_sql(sql: str) -> str:
 
 def execute_sql(sql: str) -> list[dict]:
     sql = validate_sql(sql)
-    with closing(sqlite3.connect(DB_PATH)) as connection:
+    with closing(_connect_readonly()) as connection:
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA query_only = ON")
 

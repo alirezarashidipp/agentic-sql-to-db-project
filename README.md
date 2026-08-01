@@ -28,16 +28,22 @@ Try questions such as:
 
 Requirements:
 
-- Python 3.14
-- [uv](https://docs.astral.sh/uv/)
+- Python 3.14 with `pip`
 - An OpenAI API key
 
 ```powershell
+# Use Python available on that computer:
+& "D:\path\to\python.exe" -m venv .venv
+
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env.local
-# Add OPENAI_API_KEY to .env.local
-uv sync --locked
-uv run python main.py
+# Add the API key to .env.local
+.\.venv\Scripts\python.exe main.py
 ```
+
+If `python` is not on `PATH`, use its full path for the first command, for
+example `& "C:\path\to\python.exe" -m venv .venv`. If PowerShell activation is
+blocked, run `.\.venv\Scripts\python.exe` directly instead of `python`.
 
 Open <http://127.0.0.1:8000>. Interactive API documentation is available at
 <http://127.0.0.1:8000/docs>.
@@ -50,8 +56,9 @@ Create `.env.local` as shown above, then run:
 docker compose up --build
 ```
 
-Open <http://127.0.0.1:8000>. Compose stores its SQLite database in a named
-volume and does not bake `.env.local` into the image.
+Open <http://127.0.0.1:8000>. The image includes the existing fictional
+`employees.db` asset and opens it read-only. `.env.local` is supplied only at
+runtime.
 
 ## Configuration
 
@@ -81,7 +88,7 @@ question
        -> compatible two-column result: offer valid Bar / Pie views
 ```
 
-Prompts live in `prompts/*.yml`; table-specific definitions live in
+Prompts live in `prompts/*.yml`; table-specific column descriptions live in
 `app/schema.py`. The frontend discovers the configured table through
 `GET /schema`, so it does not hardcode employee columns.
 
@@ -115,7 +122,8 @@ See [docs/security.md](docs/security.md) for the threat model.
 |-- docker-compose.yml
 |-- Makefile
 |-- main.py
-`-- employees.db            # Tracked sample data asset
+|-- requirements.txt       # Pinned direct Python dependencies
+`-- employees.db            # Tracked prebuilt sample data asset
 ```
 
 Directories for migrations, benchmarks, memory, or scripts are intentionally
@@ -125,21 +133,20 @@ absent until the project has real code that belongs in them.
 
 To use another SQLite asset:
 
-1. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
-2. Update `TABLE_DDL`, `SEED_SQL`, `SEED_ROWS`, `COLUMN_GUIDE`, and
-   `EXAMPLE_QUESTIONS` in `app/schema.py` as needed.
-3. Make every `COLUMN_GUIDE` key exactly match a live table column.
-4. Restart the app.
+1. Create and populate the SQLite file in your separate data process.
+2. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
+3. Update `COLUMN_GUIDE` and `EXAMPLE_QUESTIONS` in `app/schema.py`.
+4. Make every `COLUMN_GUIDE` key exactly match a live table column.
+5. Restart the app.
 
-Set `SEED_ROWS = ()` and leave `TABLE_DDL` empty when an existing database must
-not be modified. See [docs/database.md](docs/database.md) for imports, schema
-changes, and database replacement.
+The application never creates, migrates, or seeds the database. See
+[docs/database.md](docs/database.md) for the existing-file contract.
 
 ## Verify changes
 
 ```powershell
-uv run python -m unittest discover -s tests -v
-uv run python main.py --check
+python -m unittest discover -s tests -v
+python main.py --check
 node --check static/app.js
 node --test tests/test_chart.cjs
 ```

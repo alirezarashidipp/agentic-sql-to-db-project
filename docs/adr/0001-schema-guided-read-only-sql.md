@@ -18,8 +18,8 @@ Use:
 - OpenAI structured output for question review and SQL shape;
 - live SQLite metadata plus `COLUMN_GUIDE` as the validation contract;
 - YAML files for prompt text;
-- SQLite with a single-table `SELECT` validator, query-only mode, and an
-  authorizer callback.
+- a pre-provisioned SQLite file opened in read-only mode, with a single-table
+  `SELECT` validator, query-only mode, and an authorizer callback.
 
 The system exposes one configured table at a time. Invalid or incomplete
 questions end after review and never reach SQL generation.
@@ -37,7 +37,7 @@ Costs:
 
 - Valid requests make three model calls.
 - SQL capabilities are intentionally narrow.
-- Schema changes require database recreation or external migration.
+- Schema and data lifecycle remain the responsibility of the external producer.
 - Moving to another database engine requires a new adapter and safety model.
 
 ## Rejected alternatives
@@ -47,4 +47,4 @@ Costs:
 - An ORM: it does not remove the need to validate model-generated query intent
   and adds concepts unrelated to this learning goal.
 - Prompt-only SQL safety: model instructions are not an execution boundary.
-- A migration framework: unnecessary while the project owns one demo table.
+- A migration framework: unnecessary because database lifecycle is external.
