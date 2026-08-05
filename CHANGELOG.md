@@ -4,6 +4,8 @@ Notable changes are recorded here.
 
 ## Unreleased
 
+- Simplified the LangGraph pipeline, prompt rendering, tests, and frontend;
+  removed stale audit/design artifacts without changing user-facing behavior.
 - Standardized local development, CI, and Docker on `venv` and `pip`.
 - Added `EMPLOYEE_NAME`, expanded the fictional database to 100 rows, and made
   SQLite a pre-provisioned read-only runtime dependency.

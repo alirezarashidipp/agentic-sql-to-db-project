@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/tokens.css">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/chart.js" defer></script>
   <script src="/static/app.js" defer></script>
@@ -89,9 +88,6 @@
           <button id="submit" type="submit">
             <span class="button-label">Run question</span>
             <span class="spinner" aria-hidden="true"></span>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M4 10h12M11 5l5 5-5 5"/>
-            </svg>
           </button>
         </div>
       </form>
@@ -122,12 +118,7 @@
         </section>
 
         <details id="debug">
-          <summary>
-            <span>Inspect SQL and raw rows</span>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="m6 8 4 4 4-4"/>
-            </svg>
-          </summary>
+          <summary>Inspect SQL and raw rows</summary>
           <div class="debug-grid">
             <article>
               <span>Generated SQL</span>

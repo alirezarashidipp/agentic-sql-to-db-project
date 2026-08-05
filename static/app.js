@@ -190,8 +190,7 @@ form.addEventListener("submit", async (event) => {
   answer.className = "";
   answer.textContent = "Checking your question against the configured schema...";
   setWorkflow("loading");
-  resultStatus.className = "status";
-  resultStatus.textContent = "Processing";
+  setStatus("loading");
 
   try {
     const response = await fetch("/ask", {

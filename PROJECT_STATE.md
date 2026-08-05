@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-02
+Last updated: 2026-08-05
 
 ## Status
 
@@ -11,7 +11,7 @@ the generated SQL, and get an answer grounded in the database result.
 ## Working capabilities
 
 - FastAPI serves the web UI and JSON API.
-- LangGraph routes valid, incomplete, and invalid questions.
+- A three-node LangGraph routes valid, incomplete, and invalid questions.
 - OpenAI structured output validates questions and generates SQL.
 - YAML files hold all LLM prompt text.
 - A pre-provisioned SQLite file is opened read-only and introspected with
@@ -20,7 +20,8 @@ the generated SQL, and get an answer grounded in the database result.
   authorization.
 - The frontend renders columns and examples from `GET /schema`.
 - The frontend offers native Bar/Pie views after compatible two-column results.
-- Standard-library tests cover database guardrails and chart eligibility.
+- Standard-library tests cover API/schema contracts, workflow routing,
+  database guardrails, result comparison, answer inputs, and chart eligibility.
 - Python dependencies install with standard `pip` into a local `.venv`.
 - Docker and Compose include the existing fictional SQLite asset.
 - GitHub Actions is configured to run deterministic checks without calling

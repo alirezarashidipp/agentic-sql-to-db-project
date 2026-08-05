@@ -10,8 +10,8 @@ employee records.
 
 1. FastAPI limits question length.
 2. Structured model output constrains validation status and SQL shape.
-3. `validate_sql()` accepts one comment-free `SELECT` that references the
-   configured table.
+3. `validate_sql()` accepts one comment-free `SELECT`, and execution requires
+   a real read from the configured table rather than a table name inside text.
 4. The existing SQLite file is opened with URI `mode=ro` and
    `PRAGMA query_only = ON`.
 5. A SQLite authorizer denies reads from other tables and all SQLite write

@@ -3,7 +3,6 @@ import sys
 from app.api import app
 from app.config import TABLE_NAME
 from app.database import describe_table, execute_sql
-from app.workflow import route_after_review
 
 
 def self_check() -> None:
@@ -12,10 +11,6 @@ def self_check() -> None:
     assert execute_sql(
         f'SELECT COUNT(*) AS total FROM "{TABLE_NAME}"'
     )[0]["total"] >= 0
-    assert route_after_review({"question": "coders", "status": "valid"}) == "generate_sql"
-    assert route_after_review({"question": "how many?", "status": "incomplete"}) != (
-        "generate_sql"
-    )
     print("self-check passed")
 
 

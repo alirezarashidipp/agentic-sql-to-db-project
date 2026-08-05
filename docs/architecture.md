@@ -35,9 +35,10 @@ flowchart LR
     Shape -->|"compatible two-column result"| Chart["Offer Bar / Pie views"]
 ```
 
-The workflow state is a `TypedDict`. `review_question` is the only conditional
-node: non-valid questions end immediately; valid questions continue through SQL
-generation, execution, and answer generation.
+The workflow state is a `TypedDict` with three nodes. `review_question` loads
+the cached schema and routes non-valid questions to the end. Valid questions
+continue through `query_database`, which generates and safely executes SQL,
+then `generate_answer`.
 
 ## Runtime sources of truth
 

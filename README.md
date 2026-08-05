@@ -41,10 +41,6 @@ Copy-Item .env.example .env.local
 .\.venv\Scripts\python.exe main.py
 ```
 
-If `python` is not on `PATH`, use its full path for the first command, for
-example `& "C:\path\to\python.exe" -m venv .venv`. If PowerShell activation is
-blocked, run `.\.venv\Scripts\python.exe` directly instead of `python`.
-
 Open <http://127.0.0.1:8000>. Interactive API documentation is available at
 <http://127.0.0.1:8000/docs>.
 
@@ -145,8 +141,8 @@ The application never creates, migrates, or seeds the database. See
 ## Verify changes
 
 ```powershell
-python -m unittest discover -s tests -v
-python main.py --check
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe main.py --check
 node --check static/app.js
 node --test tests/test_chart.cjs
 ```

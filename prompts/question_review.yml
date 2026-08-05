@@ -1,9 +1,8 @@
-name: question_review
 version: 1
 template: |
   Review a user question against this SQLite table:
 
-  {{schema}}
+  {schema}
 
   Use the column descriptions and possible values as the validation contract.
   Map clear synonyms and spelling mistakes to the matching column or value, but

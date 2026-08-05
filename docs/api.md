@@ -53,9 +53,9 @@ Successful response:
   "question": "How many coders are in MSW?",
   "normalized_question": "How many CODER employees are in MSW?",
   "status": "valid",
-  "answer": "There are 2 coders in MSW.",
+  "answer": "There are 20 coders in MSW.",
   "sql": "SELECT COUNT(*) AS total FROM employees WHERE STATUS = 'CODER' AND DEPARTMENT = 'MSW'",
-  "rows": [{"total": 2}]
+  "rows": [{"total": 20}]
 }
 ```
 
