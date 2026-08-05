@@ -25,6 +25,26 @@ Default schema:
 
 ## Supply another SQLite file
 
+For a flat CSV, the standalone `csv_to_sqlite.py` tool can act as the external
+data producer. It uses only Python's standard library and is never imported by
+the application:
+
+```powershell
+.\.venv\Scripts\python.exe csv_to_sqlite.py `
+  .\input.csv `
+  .\data-new.db `
+  --table data `
+  --infer-types
+```
+
+The tool creates one flat table. It does not infer primary keys, indexes,
+relationships, or `NOT NULL` constraints. It refuses an existing output by
+default; `--replace` atomically replaces the complete database after a
+successful conversion. Stop the app before replacing its configured file.
+`main.py --check` validates the database selected in `.env.local`; deterministic
+unit tests intentionally continue to use the sample database from `.env.example`
+unless the project's default dataset is deliberately changed.
+
 1. Create and populate the file in the external data process.
 2. Stop the application.
 3. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.

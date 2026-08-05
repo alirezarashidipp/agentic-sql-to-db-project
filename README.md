@@ -118,6 +118,7 @@ See [docs/security.md](docs/security.md) for the threat model.
 |-- Dockerfile
 |-- docker-compose.yml
 |-- Makefile
+|-- csv_to_sqlite.py       # Standalone CSV-to-SQLite data tool
 |-- main.py
 |-- requirements.txt       # Pinned direct Python dependencies
 |-- requirements-eval.txt  # Optional DeepEval dependencies
@@ -128,6 +129,28 @@ Directories for migrations, benchmarks, memory, or scripts are intentionally
 absent until the project has real code that belongs in them.
 
 ## Change the data
+
+### Convert a CSV file
+
+Stop the app and create a new database file with the standalone standard-library
+tool:
+
+```powershell
+.\.venv\Scripts\python.exe csv_to_sqlite.py `
+  .\employees.csv `
+  .\employees-new.db `
+  --table employees `
+  --infer-types
+```
+
+The first row supplies the column names. Without `--infer-types`, every column
+stays `TEXT`, which preserves identifiers such as `00123`. With the flag, only
+clear `INTEGER` and `REAL` columns are converted. Blank cells become `NULL` in
+both modes.
+
+Use `--delimiter ";"` for semicolon-separated files or `--delimiter tab` for
+TSV. An existing output file is refused unless `--replace` is explicit, and
+replacement happens only after the new database is complete.
 
 To use another SQLite asset:
 
@@ -155,17 +178,47 @@ node --test tests/test_chart.cjs
 The eval suite calls OpenAI and is intentionally separate from the deterministic
 tests and CI. It reuses `OPENAI_API_KEY` and `OPENAI_MODEL` from `.env.local`;
 DeepEval uses `OPENAI_MODEL_NAME` when set, or `gpt-4.1` as the judge model.
+No second API key is needed.
+
+### 1. Configure and install
+
+Keep the same `OPENAI_API_KEY` used by the app in `.env.local`. Optionally add
+`OPENAI_MODEL_NAME=<judge-model>` there when the default judge is unavailable.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-eval.txt
 $env:PYTHONUTF8 = "1"
+$env:DEEPEVAL_TELEMETRY_OPT_OUT = "1"  # optional
+```
+
+### 2. Run free checks first
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe main.py --check
+```
+
+### 3. Run the live eval
+
+```powershell
 .\.venv\Scripts\deepeval.exe test run evals\test_llm.py -v
 ```
 
-`EVAL_CASES` contains four SQL-result cases, four rejected-question cases, and
-two final-answer cases. Update these goldens whenever the configured table or
-column meanings change. SQL and routing use exact assertions; DeepEval judges
-answer correctness, relevance, and grounding.
+The three groups mean:
+
+- `test_generated_sql_matches_reference_result`: generated and reference SQL
+  may differ as text, but their rows must match on the current database.
+- `test_unclear_or_invalid_question_is_rejected_without_sql`: status must be
+  `incomplete` or `invalid`, and no SQL may run.
+- `test_final_answer_is_correct_relevant_and_grounded`: DeepEval judges answer
+  relevance, faithfulness to `rows`, and correctness against the reference.
+
+After changing the database, update `COLUMN_GUIDE`, `EXAMPLE_QUESTIONS`, and
+all affected `EVAL_CASES` in `app/schema.py`. In particular, a rejected question
+must be changed if the new schema now contains the requested field. The
+`answers` rows are fixed fixtures, not rows loaded from the database. Live
+metrics cost API calls and may vary slightly; retry one borderline result, but
+do not lower the `0.7` thresholds merely to make a failure pass.
 
 ## Documentation
 

@@ -25,6 +25,8 @@ the generated SQL, and get an answer grounded in the database result.
   database guardrails, result comparison, answer inputs, and chart eligibility.
 - An opt-in DeepEval suite measures live question classification, generated SQL
   result equivalence, and final-answer correctness and grounding.
+- A standalone standard-library tool converts one flat CSV into a replacement
+  SQLite asset without changing the application's read-only runtime.
 - Python dependencies install with standard `pip` into a local `.venv`.
 - Docker and Compose include the existing fictional SQLite asset.
 - GitHub Actions is configured to run deterministic checks without calling
