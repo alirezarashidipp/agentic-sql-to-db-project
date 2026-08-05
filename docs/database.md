@@ -29,7 +29,7 @@ Default schema:
 2. Stop the application.
 3. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
 4. Update `COLUMN_GUIDE` to match the selected table's exact columns.
-5. Update `EXAMPLE_QUESTIONS` when the dataset changes.
+5. Update `EXAMPLE_QUESTIONS` and `EVAL_CASES` when the dataset changes.
 6. Restart the application.
 
 No change is required in `app/database.py`, `app/workflow.py`, the prompt
@@ -40,10 +40,13 @@ YAML, or the frontend.
 The external producer owns all `CREATE TABLE`, `ALTER TABLE`, `INSERT`,
 `UPDATE`, and migration work. After replacing or migrating the SQLite file:
 
-1. update `COLUMN_GUIDE` when columns or their meaning changed;
+1. update `COLUMN_GUIDE` and the schema-specific `EVAL_CASES` when columns or
+   their meaning changed;
 2. keep every guide key identical to its live SQLite column name;
 3. restart the application to clear cached schema metadata;
-4. run the tests and `python main.py --check` from the active virtual environment.
+4. run the deterministic tests and `python main.py --check` from the active
+   virtual environment;
+5. run the opt-in DeepEval suite when an OpenAI key is available.
 
 Never commit real employee or personal data.
 

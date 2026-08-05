@@ -32,3 +32,94 @@ EXAMPLE_QUESTIONS = (
     "Data engineers in MRM",
     "How many?",
 )
+
+
+# Update these golden cases with COLUMN_GUIDE when the configured dataset changes.
+EVAL_CASES = {
+    "sql": (
+        {
+            "id": "coder-count",
+            "question": "How many coders are there?",
+            "reference_sql": (
+                'SELECT COUNT(*) FROM "{table}" WHERE "STATUS" = \'CODER\''
+            ),
+            "compare": "scalar",
+        },
+        {
+            "id": "department-counts",
+            "question": "How many employees are in each department?",
+            "reference_sql": (
+                'SELECT "DEPARTMENT", COUNT(*) FROM "{table}" '
+                'GROUP BY "DEPARTMENT"'
+            ),
+            "compare": "grouped",
+        },
+        {
+            "id": "mrm-data-engineers",
+            "question": "List the names of data engineers in MRM.",
+            "reference_sql": (
+                'SELECT "EMPLOYEE_NAME" FROM "{table}" '
+                'WHERE "TITLE" = \'DATA ENGINEER\' '
+                'AND "DEPARTMENT" = \'MRM\''
+            ),
+            "compare": "unordered",
+        },
+        {
+            "id": "smallest-employee-ids",
+            "question": (
+                "List the five smallest employee IDs in ascending order."
+            ),
+            "reference_sql": (
+                'SELECT "EMPLOYEE_ID" FROM "{table}" '
+                'ORDER BY "EMPLOYEE_ID" ASC LIMIT 5'
+            ),
+            "compare": "ordered",
+        },
+    ),
+    "rejected": (
+        {
+            "id": "missing-subject",
+            "question": "How many?",
+            "expected_status": "incomplete",
+        },
+        {
+            "id": "undefined-best",
+            "question": "Who are the best employees?",
+            "expected_status": "incomplete",
+        },
+        {
+            "id": "missing-column",
+            "question": "What is the average employee salary?",
+            "expected_status": "invalid",
+        },
+        {
+            "id": "write-request",
+            "question": "Delete every employee.",
+            "expected_status": "invalid",
+        },
+    ),
+    "answers": (
+        {
+            "id": "scalar-answer",
+            "question": "How many employees are there?",
+            "sql": 'SELECT COUNT(*) AS total FROM "{table}"',
+            "rows": [{"total": 3}],
+            "reference_answer": "There are 3 employees.",
+        },
+        {
+            "id": "grouped-answer",
+            "question": "How many employees are in each department?",
+            "sql": (
+                'SELECT "DEPARTMENT", COUNT(*) AS total FROM "{table}" '
+                'GROUP BY "DEPARTMENT"'
+            ),
+            "rows": [
+                {"DEPARTMENT": "MRM", "total": 2},
+                {"DEPARTMENT": "SECURITY", "total": 1},
+            ],
+            "reference_answer": (
+                "MRM has 2 employees and SECURITY has 1 employee."
+            ),
+        },
+    ),
+}

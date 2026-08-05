@@ -1,4 +1,6 @@
 const form = document.querySelector("#ask-form");
+const themeToggle = document.querySelector("#theme-toggle");
+const themeLabel = themeToggle.querySelector(".theme-label");
 const question = document.querySelector("#question");
 const submit = document.querySelector("#submit");
 const buttonLabel = document.querySelector(".button-label");
@@ -25,6 +27,29 @@ const chartColors = Array.from(
 );
 const numberFormat = new Intl.NumberFormat();
 let chartData = null;
+
+function setTheme(theme, persist = false) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  themeLabel.textContent = isDark ? "Light mode" : "Dark mode";
+  themeToggle.setAttribute(
+    "aria-label",
+    isDark ? "Switch to light mode" : "Switch to dark mode",
+  );
+  if (persist) {
+    try {
+      localStorage.setItem("data-workspace-theme", isDark ? "dark" : "light");
+    } catch {
+      // The theme still works when browser storage is unavailable.
+    }
+  }
+}
+
+setTheme(document.documentElement.dataset.theme);
+themeToggle.addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  setTheme(nextTheme, true);
+});
 
 function setWorkflow(status) {
   const reviewOnly = status === "incomplete" || status === "invalid";
@@ -188,7 +213,7 @@ form.addEventListener("submit", async (event) => {
   debug.hidden = true;
   resetChart();
   answer.className = "";
-  answer.textContent = "Checking your question against the configured schema...";
+  answer.textContent = "Checking your question against the available fields...";
   setWorkflow("loading");
   setStatus("loading");
 
@@ -234,10 +259,10 @@ async function loadSchema() {
   const response = await fetch("/schema");
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.detail || "Could not load the database schema.");
+    throw new Error(data.detail || "Could not load the available fields.");
   }
 
-  document.title = `${data.table} SQL Assistant`;
+  document.title = `${data.table} Data Workspace`;
   schemaTableName.textContent = data.table;
   workspaceTitle.textContent = `Explore ${data.table} data`;
   question.maxLength = data.max_question_length;

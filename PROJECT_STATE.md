@@ -19,9 +19,12 @@ the generated SQL, and get an answer grounded in the database result.
 - SQL has application validation, query-only mode, and table-scoped
   authorization.
 - The frontend renders columns and examples from `GET /schema`.
+- The frontend offers a persisted light/dark appearance toggle.
 - The frontend offers native Bar/Pie views after compatible two-column results.
 - Standard-library tests cover API/schema contracts, workflow routing,
   database guardrails, result comparison, answer inputs, and chart eligibility.
+- An opt-in DeepEval suite measures live question classification, generated SQL
+  result equivalence, and final-answer correctness and grounding.
 - Python dependencies install with standard `pip` into a local `.venv`.
 - Docker and Compose include the existing fictional SQLite asset.
 - GitHub Actions is configured to run deterministic checks without calling
@@ -48,7 +51,8 @@ The application and container never create, migrate, or seed it.
   strictly positive values.
 - Valid questions make three model calls; incomplete or invalid questions make
   one.
-- There are no automated LLM accuracy evaluations yet.
+- Live evals consume OpenAI requests, can vary slightly between runs, and are
+  intentionally excluded from deterministic CI.
 
 ## Not production-ready
 
@@ -62,8 +66,6 @@ environment.
 
 ## Next useful work
 
-1. Add a small golden evaluation set for question classification and SQL
-   results.
-2. Add request IDs, safe logging, and upstream timeouts.
-3. Add authentication and rate limits only when a real deployment requires
+1. Add request IDs, safe logging, and upstream timeouts.
+2. Add authentication and rate limits only when a real deployment requires
    public or shared access.

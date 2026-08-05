@@ -6,6 +6,8 @@ build/
 dist/
 wheels/
 *.egg-info
+.deepeval/
+.pytest_cache/
 .env*
 !.env.example
 

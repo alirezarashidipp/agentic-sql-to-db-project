@@ -105,6 +105,7 @@ See [docs/security.md](docs/security.md) for the threat model.
 .
 |-- app/                    # FastAPI, LangGraph, config, and SQLite code
 |-- prompts/                # Versioned prompt templates
+|-- evals/                  # Opt-in live LLM evaluations
 |-- static/                 # HTML, CSS, and JavaScript frontend
 |-- tests/                  # Standard-library regression tests
 |-- docs/                   # Architecture, API, database, deployment, security
@@ -119,6 +120,7 @@ See [docs/security.md](docs/security.md) for the threat model.
 |-- Makefile
 |-- main.py
 |-- requirements.txt       # Pinned direct Python dependencies
+|-- requirements-eval.txt  # Optional DeepEval dependencies
 `-- employees.db            # Tracked prebuilt sample data asset
 ```
 
@@ -131,7 +133,8 @@ To use another SQLite asset:
 
 1. Create and populate the SQLite file in your separate data process.
 2. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
-3. Update `COLUMN_GUIDE` and `EXAMPLE_QUESTIONS` in `app/schema.py`.
+3. Update `COLUMN_GUIDE`, `EXAMPLE_QUESTIONS`, and `EVAL_CASES` in
+   `app/schema.py`.
 4. Make every `COLUMN_GUIDE` key exactly match a live table column.
 5. Restart the app.
 
@@ -146,6 +149,23 @@ The application never creates, migrates, or seeds the database. See
 node --check static/app.js
 node --test tests/test_chart.cjs
 ```
+
+## Run the live LLM evaluations
+
+The eval suite calls OpenAI and is intentionally separate from the deterministic
+tests and CI. It reuses `OPENAI_API_KEY` and `OPENAI_MODEL` from `.env.local`;
+DeepEval uses `OPENAI_MODEL_NAME` when set, or `gpt-4.1` as the judge model.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-eval.txt
+$env:PYTHONUTF8 = "1"
+.\.venv\Scripts\deepeval.exe test run evals\test_llm.py -v
+```
+
+`EVAL_CASES` contains four SQL-result cases, four rejected-question cases, and
+two final-answer cases. Update these goldens whenever the configured table or
+column meanings change. SQL and routing use exact assertions; DeepEval judges
+answer correctness, relevance, and grounding.
 
 ## Documentation
 
