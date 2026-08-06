@@ -9,20 +9,26 @@ Returns `static/index.html`.
 
 ## `GET /schema`
 
-Returns the configured table, its live SQLite columns combined with
+Returns the fixed `data` table, its live SQLite columns combined with
 `COLUMN_GUIDE`, example questions, and the maximum question length.
 
 Example response:
 
 ```json
 {
-  "table": "employees",
+  "table": "data",
   "columns": [
     {
       "name": "EMPLOYEE_ID",
       "type": "INTEGER PRIMARY KEY",
       "description": "Unique numeric identifier for one employee.",
-      "possible_values": "Integer IDs from 1001 to 1010 in the demo data."
+      "possible_values": "Integer IDs from 1001 to 1100 in the demo data."
+    },
+    {
+      "name": "EMPLOYEE_NAME",
+      "type": "TEXT NOT NULL",
+      "description": "Synthetic full name of the employee.",
+      "possible_values": "100 fictional demo names, such as AVA CARTER and LEO KOWALSKI."
     }
   ],
   "examples": ["How many coders?"],
@@ -47,9 +53,9 @@ Successful response:
   "question": "How many coders are in MSW?",
   "normalized_question": "How many CODER employees are in MSW?",
   "status": "valid",
-  "answer": "There are 2 coders in MSW.",
-  "sql": "SELECT COUNT(*) AS total FROM employees WHERE STATUS = 'CODER' AND DEPARTMENT = 'MSW'",
-  "rows": [{"total": 2}]
+  "answer": "There are 20 coders in MSW.",
+  "sql": "SELECT COUNT(*) AS total FROM data WHERE STATUS = 'CODER' AND DEPARTMENT = 'MSW'",
+  "rows": [{"total": 20}]
 }
 ```
 
@@ -57,7 +63,7 @@ Successful response:
 
 - `valid`: SQL was generated and executed.
 - `incomplete`: the response asks one clarification; `sql` is `null`.
-- `invalid`: the request is outside the configured table or requests a write;
+- `invalid`: the request is outside the fixed `data` table or requests a write;
   `sql` is `null`.
 
 ## Errors

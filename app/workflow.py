@@ -5,7 +5,7 @@ from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
 from .config import MAX_RESULT_ROWS, MODEL, get_openai_client
-from .database import describe_table, execute_sql, validate_sql
+from .database import describe_table, execute_sql
 from .prompts import load_prompt, render_prompt
 
 ReviewStatus = Literal["valid", "incomplete", "invalid"]
@@ -32,11 +32,8 @@ class SqlQuery(BaseModel):
     sql: str
 
 
-def load_schema(_state: WorkflowState) -> dict:
-    return {"schema": describe_table()}
-
-
 def review_question(state: WorkflowState) -> dict:
+    schema = describe_table()
     response = get_openai_client().responses.parse(
         model=MODEL,
         reasoning={"effort": "none"},
@@ -44,7 +41,7 @@ def review_question(state: WorkflowState) -> dict:
             {
                 "role": "developer",
                 "content": render_prompt(
-                    "question_review", schema=state["schema"]
+                    "question_review", schema=schema
                 ),
             },
             {"role": "user", "content": state["question"]},
@@ -56,17 +53,17 @@ def review_question(state: WorkflowState) -> dict:
         raise ValueError("The model could not review the question.")
 
     review = response.output_parsed
-    update = review.model_dump()
+    update = {"schema": schema, **review.model_dump()}
     if review.status != "valid":
         update["answer"] = review.message
     return update
 
 
-def route_after_review(state: WorkflowState) -> Literal["generate_sql", END]:
-    return "generate_sql" if state["status"] == "valid" else END
+def route_after_review(state: WorkflowState) -> Literal["query_database", END]:
+    return "query_database" if state["status"] == "valid" else END
 
 
-def generate_sql(state: WorkflowState) -> dict:
+def query_database(state: WorkflowState) -> dict:
     response = get_openai_client().responses.parse(
         model=MODEL,
         reasoning={"effort": "none"},
@@ -86,11 +83,8 @@ def generate_sql(state: WorkflowState) -> dict:
     )
     if not response.output_parsed:
         raise ValueError("The model did not return a SQL query.")
-    return {"sql": validate_sql(response.output_parsed.sql)}
-
-
-def run_sql(state: WorkflowState) -> dict:
-    return {"rows": execute_sql(state["sql"])}
+    sql = response.output_parsed.sql.strip()
+    return {"sql": sql, "rows": execute_sql(sql)}
 
 
 def generate_answer(state: WorkflowState) -> dict:
@@ -112,15 +106,11 @@ def generate_answer(state: WorkflowState) -> dict:
 
 
 builder = StateGraph(WorkflowState)
-builder.add_node("load_schema", load_schema)
 builder.add_node("review_question", review_question)
-builder.add_node("generate_sql", generate_sql)
-builder.add_node("run_sql", run_sql)
+builder.add_node("query_database", query_database)
 builder.add_node("generate_answer", generate_answer)
-builder.add_edge(START, "load_schema")
-builder.add_edge("load_schema", "review_question")
+builder.add_edge(START, "review_question")
 builder.add_conditional_edges("review_question", route_after_review)
-builder.add_edge("generate_sql", "run_sql")
-builder.add_edge("run_sql", "generate_answer")
+builder.add_edge("query_database", "generate_answer")
 builder.add_edge("generate_answer", END)
 question_graph = builder.compile()

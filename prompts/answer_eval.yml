@@ -1,0 +1,5 @@
+version: 1
+template: |
+  Determine whether the actual output answers the input correctly and
+  completely, with the same meaning and facts as the expected output.
+  Different wording is acceptable; missing or invented facts are not.

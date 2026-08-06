@@ -1,5 +1,4 @@
 import os
-import re
 from functools import cache
 from pathlib import Path
 
@@ -35,12 +34,8 @@ def positive_int(name: str) -> int:
 load_local_env()
 
 MODEL = required_env("OPENAI_MODEL")
-TABLE_NAME = required_env("TABLE_NAME")
 MAX_QUESTION_LENGTH = positive_int("MAX_QUESTION_LENGTH")
 MAX_RESULT_ROWS = positive_int("MAX_RESULT_ROWS")
-
-if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", TABLE_NAME):
-    raise ValueError("TABLE_NAME must be a valid SQLite identifier.")
 
 DB_PATH = Path(required_env("DATABASE_PATH"))
 if not DB_PATH.is_absolute():

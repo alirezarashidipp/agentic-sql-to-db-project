@@ -17,7 +17,4 @@ def load_prompt(name: str) -> str:
 
 
 def render_prompt(name: str, **values: object) -> str:
-    prompt = load_prompt(name)
-    for key, value in values.items():
-        prompt = prompt.replace(f"{{{{{key}}}}}", str(value))
-    return prompt
+    return load_prompt(name).format(**values)

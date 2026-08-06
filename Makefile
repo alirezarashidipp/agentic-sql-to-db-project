@@ -1,16 +1,16 @@
-.PHONY: sync run check test docker-up docker-down
+.PHONY: install run check test docker-up docker-down
 
-sync:
-	uv sync --locked
+install:
+	python -m pip install -r requirements.txt
 
 run:
-	uv run python main.py
+	python main.py
 
 check:
-	uv run python main.py --check
+	python main.py --check
 
 test:
-	uv run python -m unittest discover -s tests -v
+	python -m unittest discover -s tests -v
 	node --test tests/test_chart.cjs
 
 docker-up:

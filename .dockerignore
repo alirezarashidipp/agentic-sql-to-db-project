@@ -6,6 +6,7 @@ env
 __pycache__
 *.py[cod]
 *.db
+!main_datawarehouse.db
 *.db-journal
 *.db-shm
 *.db-wal

@@ -1,4 +1,3 @@
-name: answer
 version: 1
 template: |
   Answer the user question using only the supplied SQLite result.

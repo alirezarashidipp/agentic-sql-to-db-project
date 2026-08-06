@@ -3,8 +3,8 @@
 Ask a question in plain English, turn it into guarded SQLite, and return an
 answer grounded in the query result.
 
-This learning project keeps the full path visible: FastAPI receives the
-question, LangGraph validates and completes it, OpenAI produces structured
+This schema-guided SQL application keeps the full path visible: FastAPI
+receives the question, LangGraph validates and completes it, OpenAI produces structured
 output, SQLite runs a read-only query, and a small HTML/CSS/JavaScript frontend
 shows the result.
 
@@ -15,7 +15,8 @@ shows the result.
 3. Generates one SQLite `SELECT` query.
 4. Applies application and SQLite-level read-only guardrails.
 5. Answers from the returned rows only.
-6. Offers Bar or Pie views only when the returned rows have a compatible shape.
+6. Automatically renders a Bar chart for compatible results and offers Pie when
+   supported.
 
 Try questions such as:
 
@@ -28,15 +29,17 @@ Try questions such as:
 
 Requirements:
 
-- Python 3.14
-- [uv](https://docs.astral.sh/uv/)
+- Python 3.14 with `pip`
 - An OpenAI API key
 
 ```powershell
+# Use Python available on that computer:
+& "D:\path\to\python.exe" -m venv .venv
+
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env.local
-# Add OPENAI_API_KEY to .env.local
-uv sync --locked
-uv run python main.py
+# Add the API key to .env.local
+.\.venv\Scripts\python.exe main.py
 ```
 
 Open <http://127.0.0.1:8000>. Interactive API documentation is available at
@@ -50,8 +53,9 @@ Create `.env.local` as shown above, then run:
 docker compose up --build
 ```
 
-Open <http://127.0.0.1:8000>. Compose stores its SQLite database in a named
-volume and does not bake `.env.local` into the image.
+Open <http://127.0.0.1:8000>. The image includes the existing fictional
+`main_datawarehouse.db` asset and opens it read-only. `.env.local` is supplied only at
+runtime.
 
 ## Configuration
 
@@ -61,8 +65,7 @@ All runtime settings are required and live in `.env.local`:
 | --- | --- | --- |
 | `OPENAI_API_KEY` | OpenAI authentication | Keep secret |
 | `OPENAI_MODEL` | Model used by OpenAI-backed workflow nodes | `gpt-5.6-sol` |
-| `DATABASE_PATH` | SQLite file, relative to the project or absolute | `employees.db` |
-| `TABLE_NAME` | Single table exposed to the assistant | `employees` |
+| `DATABASE_PATH` | SQLite file, relative to the project or absolute | `main_datawarehouse.db` |
 | `MAX_QUESTION_LENGTH` | API input limit | `500` |
 | `MAX_RESULT_ROWS` | Maximum rows returned from SQLite | `100` |
 
@@ -78,22 +81,23 @@ question
   -> run read-only SQLite query
   -> generate grounded answer
   -> inspect returned rows in the browser
-       -> compatible two-column result: offer valid Bar / Pie views
+       -> compatible two-column result: render Bar and offer valid chart options
 ```
 
-Prompts live in `prompts/*.yml`; table-specific definitions live in
-`app/schema.py`. The frontend discovers the configured table through
+Prompts live in `prompts/*.yml`; the fixed table name and dataset-specific
+column descriptions live in `app/schema.py`. The frontend discovers that
+table's live schema through
 `GET /schema`, so it does not hardcode employee columns.
 
 ## Safety boundary
 
 Generated SQL is untrusted. The backend accepts a single `SELECT` against the
-configured table, enables `PRAGMA query_only`, and installs a SQLite authorizer
+fixed `data` table, enables `PRAGMA query_only`, and installs a SQLite authorizer
 that denies other tables and write operations. These layers must remain in
 place even when prompts improve.
 
-This is still a learning/local application: `/ask` has no authentication, rate
-limiting, or query timeout. Do not expose it directly to the public internet.
+This is currently a local schema-guided SQL application: `/ask` has no
+authentication, rate limiting, or query timeout. Do not expose it directly to the public internet.
 See [docs/security.md](docs/security.md) for the threat model.
 
 ## Project map
@@ -102,6 +106,7 @@ See [docs/security.md](docs/security.md) for the threat model.
 .
 |-- app/                    # FastAPI, LangGraph, config, and SQLite code
 |-- prompts/                # Versioned prompt templates
+|-- evals/                  # Opt-in live LLM evaluations
 |-- static/                 # HTML, CSS, and JavaScript frontend
 |-- tests/                  # Standard-library regression tests
 |-- docs/                   # Architecture, API, database, deployment, security
@@ -114,8 +119,11 @@ See [docs/security.md](docs/security.md) for the threat model.
 |-- Dockerfile
 |-- docker-compose.yml
 |-- Makefile
+|-- csv_to_sqlite.py       # Standalone CSV-to-SQLite data tool
 |-- main.py
-`-- employees.db            # Tracked sample data asset
+|-- requirements.txt       # Pinned direct Python dependencies
+|-- requirements-eval.txt  # Optional DeepEval dependencies
+`-- main_datawarehouse.db   # Tracked prebuilt sample data asset
 ```
 
 Directories for migrations, benchmarks, memory, or scripts are intentionally
@@ -123,26 +131,96 @@ absent until the project has real code that belongs in them.
 
 ## Change the data
 
+### Convert a CSV file
+
+Stop the app and create a new database file with the standalone standard-library
+tool:
+
+```powershell
+.\.venv\Scripts\python.exe csv_to_sqlite.py `
+  .\employees.csv `
+  .\main_datawarehouse.db `
+  --infer-types `
+  --replace
+```
+
+The first row supplies the column names. Without `--infer-types`, every column
+stays `TEXT`, which preserves identifiers such as `00123`. With the flag, only
+clear `INTEGER` and `REAL` columns are converted. Blank cells become `NULL` in
+both modes.
+
+Use `--delimiter ";"` for semicolon-separated files or `--delimiter tab` for
+TSV. An existing output file is refused unless `--replace` is explicit, and
+replacement happens only after the new database is complete.
+
 To use another SQLite asset:
 
-1. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
-2. Update `TABLE_DDL`, `SEED_SQL`, `SEED_ROWS`, `COLUMN_GUIDE`, and
-   `EXAMPLE_QUESTIONS` in `app/schema.py` as needed.
-3. Make every `COLUMN_GUIDE` key exactly match a live table column.
-4. Restart the app.
+1. Create and populate the SQLite file in your separate data process. Its table
+   must be named `data`.
+2. Set only `DATABASE_PATH` in `.env.local` if the file path differs.
+3. Update `COLUMN_GUIDE`, `EXAMPLE_QUESTIONS`, and `EVAL_CASES` in
+   `app/schema.py`.
+4. Make every `COLUMN_GUIDE` key exactly match a live table column.
+5. Restart the app.
 
-Set `SEED_ROWS = ()` and leave `TABLE_DDL` empty when an existing database must
-not be modified. See [docs/database.md](docs/database.md) for imports, schema
-changes, and database replacement.
+The application never creates, migrates, or seeds the database. See
+[docs/database.md](docs/database.md) for the existing-file contract.
 
 ## Verify changes
 
 ```powershell
-uv run python -m unittest discover -s tests -v
-uv run python main.py --check
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe main.py --check
 node --check static/app.js
 node --test tests/test_chart.cjs
 ```
+
+## Run the live LLM evaluations
+
+The eval suite calls OpenAI and is intentionally separate from the deterministic
+tests and CI. It reuses `OPENAI_API_KEY` and `OPENAI_MODEL` from `.env.local`;
+DeepEval uses `OPENAI_MODEL_NAME` when set, or `gpt-4.1` as the judge model.
+No second API key is needed.
+
+### 1. Configure and install
+
+Keep the same `OPENAI_API_KEY` used by the app in `.env.local`. Optionally add
+`OPENAI_MODEL_NAME=<judge-model>` there when the default judge is unavailable.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-eval.txt
+$env:PYTHONUTF8 = "1"
+$env:DEEPEVAL_TELEMETRY_OPT_OUT = "1"  # optional
+```
+
+### 2. Run free checks first
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe main.py --check
+```
+
+### 3. Run the live eval
+
+```powershell
+.\.venv\Scripts\deepeval.exe test run evals\test_llm.py -v
+```
+
+The three groups mean:
+
+- `test_generated_sql_matches_reference_result`: generated and reference SQL
+  may differ as text, but their rows must match on the current database.
+- `test_unclear_or_invalid_question_is_rejected_without_sql`: status must be
+  `incomplete` or `invalid`, and no SQL may run.
+- `test_final_answer_is_correct_relevant_and_grounded`: DeepEval judges answer
+  relevance, faithfulness to `rows`, and correctness against the reference.
+
+After changing the database, update `COLUMN_GUIDE`, `EXAMPLE_QUESTIONS`, and
+all affected `EVAL_CASES` in `app/schema.py`. In particular, a rejected question
+must be changed if the new schema now contains the requested field. The
+`answers` rows are fixed fixtures, not rows loaded from the database. Live
+metrics cost API calls and may vary slightly; retry one borderline result, but
+do not lower the `0.7` thresholds merely to make a failure pass.
 
 ## Documentation
 

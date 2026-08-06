@@ -1,26 +1,23 @@
-FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-dev --no-install-project
+COPY requirements.txt ./
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY prompts ./prompts
 COPY static ./static
 COPY main.py ./
+COPY main_datawarehouse.db ./main_datawarehouse.db
 
-RUN useradd --create-home appuser \
-    && mkdir -p /data \
-    && chown appuser:appuser /data
+RUN useradd --create-home appuser
 
 USER appuser
 
 EXPOSE 8000
 
-CMD ["/app/.venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

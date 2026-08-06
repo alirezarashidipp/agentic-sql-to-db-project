@@ -8,9 +8,9 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAIError
 from pydantic import BaseModel, Field
 
-from .config import MAX_QUESTION_LENGTH, STATIC_DIR, TABLE_NAME
-from .database import describe_table, initialize_database, table_schema
-from .schema import EXAMPLE_QUESTIONS
+from .config import MAX_QUESTION_LENGTH, STATIC_DIR
+from .database import describe_table, table_schema
+from .schema import EXAMPLE_QUESTIONS, TABLE_NAME
 from .workflow import question_graph
 
 
@@ -20,7 +20,6 @@ class QuestionRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    initialize_database()
     describe_table()
     yield
 

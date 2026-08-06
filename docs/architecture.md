@@ -2,8 +2,8 @@
 
 ## Purpose
 
-The application answers natural-language questions against one configured
-SQLite table while keeping schema knowledge, prompts, orchestration, database
+The application answers natural-language questions against the fixed SQLite
+table `data` while keeping schema knowledge, prompts, orchestration, database
 access, and presentation separate.
 
 ## Components
@@ -14,8 +14,8 @@ access, and presentation separate.
 | `app/api.py` | FastAPI routes, validation, and HTTP error mapping |
 | `app/workflow.py` | LangGraph state, nodes, and routing |
 | `prompts/` | Versioned question-review, SQL, and answer templates |
-| `app/schema.py` | Dataset DDL, seed rows, column guide, and examples |
-| `app/database.py` | Schema introspection, SQL validation, and execution |
+| `app/schema.py` | Fixed table name, column guide, examples, and eval cases |
+| `app/database.py` | Existing-file validation, schema introspection, and guarded queries |
 | `app/config.py` | Required environment settings and OpenAI client |
 
 ## Request flow
@@ -32,17 +32,18 @@ flowchart LR
     DB --> Answer["Generate grounded answer"]
     Answer --> UI
     UI --> Shape["Inspect returned row shape"]
-    Shape -->|"compatible two-column result"| Chart["Offer Bar / Pie views"]
+    Shape -->|"compatible two-column result"| Chart["Render Bar; offer Pie when valid"]
 ```
 
-The workflow state is a `TypedDict`. `review_question` is the only conditional
-node: non-valid questions end immediately; valid questions continue through SQL
-generation, execution, and answer generation.
+The workflow state is a `TypedDict` with three nodes. `review_question` loads
+the cached schema and routes non-valid questions to the end. Valid questions
+continue through `query_database`, which generates and safely executes SQL,
+then `generate_answer`.
 
 ## Runtime sources of truth
 
 - Environment values: `.env.local`
-- Table contract: live SQLite metadata plus `COLUMN_GUIDE`
+- Table contract: fixed table `data`, SQLite metadata, and `COLUMN_GUIDE`
 - Prompt behavior: `prompts/*.yml`
 - Workflow behavior: `app/workflow.py`
 
@@ -55,6 +56,7 @@ does not add a model call, and leaves the `/ask` response contract unchanged.
 ## Boundaries
 
 - FastAPI validates the question length before the graph runs.
+- SQLite is opened in URI read-only mode and is never created or seeded here.
 - Structured OpenAI output constrains review and SQL response shapes.
 - Generated SQL remains untrusted and passes through database guardrails.
 - Each request is stateless; no conversation history is stored.

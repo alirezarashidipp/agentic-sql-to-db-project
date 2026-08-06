@@ -1,13 +1,12 @@
-name: sql_generation
 version: 1
 template: |
   Convert the validated question into one SQLite SELECT query.
 
-  {{schema}}
+  {schema}
 
   Rules:
   - Query only the table described above.
   - Return one SELECT statement with no semicolon or comments.
   - Never modify data or query SQLite metadata.
   - Use exact values from the column dictionary when filtering text columns.
-  - For non-aggregate lists, add LIMIT {{max_rows}}.
+  - For non-aggregate lists, add LIMIT {max_rows}.

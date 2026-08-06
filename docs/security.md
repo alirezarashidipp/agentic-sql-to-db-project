@@ -2,17 +2,18 @@
 
 ## Trust model
 
-User questions and all model output are untrusted. The application is designed
-for local learning with sample data, not for public access or sensitive
-employee records.
+User questions and all model output are untrusted. This schema-guided SQL
+application is designed for local use with sample data, not for public access
+or sensitive employee records.
 
 ## Existing controls
 
 1. FastAPI limits question length.
 2. Structured model output constrains validation status and SQL shape.
-3. `validate_sql()` accepts one comment-free `SELECT` that references the
-   configured table.
-4. SQLite runs with `PRAGMA query_only = ON`.
+3. `validate_sql()` accepts one comment-free `SELECT`, and execution requires
+   a real read from the fixed `data` table rather than a table name inside text.
+4. The existing SQLite file is opened with URI `mode=ro` and
+   `PRAGMA query_only = ON`.
 5. A SQLite authorizer denies reads from other tables and all SQLite write
    actions.
 6. `MAX_RESULT_ROWS` caps returned rows.
@@ -43,5 +44,5 @@ Bind to localhost unless a trusted gateway supplies the missing controls.
 ## Reporting
 
 Do not include secrets or real employee data in a report. For this small
-learning repository, open a private report with the repository owner before
-publishing a security issue.
+schema-guided SQL application, open a private report with the repository owner
+before publishing a security issue.

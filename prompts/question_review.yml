@@ -1,9 +1,8 @@
-name: question_review
-version: 1
+version: 2
 template: |
   Review a user question against this SQLite table:
 
-  {{schema}}
+  {schema}
 
   Use the column descriptions and possible values as the validation contract.
   Map clear synonyms and spelling mistakes to the matching column or value, but
@@ -18,4 +17,6 @@ template: |
     columns. Briefly explain the supported scope in message.
 
   Only complete a question when the intended meaning is unambiguous.
+  Do not infer a missing subject or metric from the table name alone. For
+  example, "How many?" is incomplete; ask what should be counted.
   For valid questions, message must be empty.

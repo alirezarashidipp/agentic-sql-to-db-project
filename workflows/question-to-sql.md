@@ -16,21 +16,17 @@ The workflow may carry:
 
 ## Nodes
 
-1. `load_schema` combines SQLite metadata with `COLUMN_GUIDE`.
-2. `review_question` returns `valid`, `incomplete`, or `invalid`.
-3. `generate_sql` runs only for a valid normalized question.
-4. `run_sql` validates and executes the query.
-5. `generate_answer` answers only from the question, SQL, and rows.
+1. `review_question` loads the schema and returns `valid`, `incomplete`, or
+   `invalid`.
+2. `query_database` generates one query, then validates and executes it.
+3. `generate_answer` answers only from the question, SQL, and rows.
 
 ## Routing
 
 ```text
-START -> load_schema -> review_question
-                         | valid
-                         v
-                       generate_sql -> run_sql -> generate_answer -> END
-                         |
-                         + incomplete / invalid ---------------------> END
+START -> review_question
+          | valid -> query_database -> generate_answer -> END
+          ` incomplete / invalid -----------------------> END
 ```
 
 ## Change contract
