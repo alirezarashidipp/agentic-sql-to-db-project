@@ -5,9 +5,9 @@
 
 ## Context
 
-The application must teach natural-language-to-SQL without hiding the flow in a
-large framework. It also executes model-generated text, so prompt instructions
-alone cannot protect the database.
+The schema-guided SQL application must keep the natural-language-to-SQL flow
+visible without a large framework. It also executes model-generated text, so
+prompt instructions alone cannot protect the database.
 
 ## Decision
 
@@ -21,17 +21,17 @@ Use:
 - a pre-provisioned SQLite file opened in read-only mode, with a single-table
   `SELECT` validator, query-only mode, and an authorizer callback.
 
-The system exposes one configured table at a time. Invalid or incomplete
+The system exposes only the fixed table `data`. Invalid or incomplete
 questions end after review and never reach SQL generation.
 
 ## Consequences
 
 Benefits:
 
-- The teaching flow is visible in a small number of files.
+- The request flow is visible in a small number of files.
 - Prompt text, dataset knowledge, and execution controls change independently.
 - The SQLite authorizer remains effective even if a model returns unsafe SQL.
-- A new SQLite table mostly requires configuration and schema-guide changes.
+- A new dataset keeps the table name `data` and requires schema-guide changes.
 
 Costs:
 
@@ -45,6 +45,6 @@ Costs:
 - A direct question-to-SQL call: fewer steps, but no explicit clarification or
   scope validation.
 - An ORM: it does not remove the need to validate model-generated query intent
-  and adds concepts unrelated to this learning goal.
+  and adds concepts unrelated to this application's scope.
 - Prompt-only SQL safety: model instructions are not an execution boundary.
 - A migration framework: unnecessary because database lifecycle is external.

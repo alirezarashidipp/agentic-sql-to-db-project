@@ -12,7 +12,6 @@ from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, GEval
 from deepeval.test_case import LLMTestCase, SingleTurnParams
 
 from app import workflow
-from app.config import TABLE_NAME
 from app.database import execute_sql
 from app.prompts import load_prompt
 from app.schema import EVAL_CASES
@@ -47,10 +46,6 @@ def _rows_equal(actual, expected, mode):
     raise ValueError(f"Unknown comparison mode: {mode}")
 
 
-def _sql(template):
-    return template.format(table=TABLE_NAME)
-
-
 @pytest.mark.parametrize(
     "case", EVAL_CASES["sql"], ids=lambda case: case["id"]
 )
@@ -59,7 +54,7 @@ def test_generated_sql_matches_reference_result(case):
     assert review["status"] == "valid", review
 
     generated = workflow.query_database(review)
-    expected_rows = execute_sql(_sql(case["reference_sql"]))
+    expected_rows = execute_sql(case["reference_sql"])
     assert _rows_equal(generated["rows"], expected_rows, case["compare"]), (
         f"generated SQL: {generated['sql']}\n"
         f"generated rows: {generated['rows']}\n"
@@ -90,7 +85,7 @@ def test_final_answer_is_correct_relevant_and_grounded(case):
     result = workflow.generate_answer(
         {
             "normalized_question": case["question"],
-            "sql": _sql(case["sql"]),
+            "sql": case["sql"],
             "rows": case["rows"],
         }
     )

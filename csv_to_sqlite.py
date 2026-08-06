@@ -1,4 +1,4 @@
-"""Convert one CSV file into a standalone SQLite database."""
+"""Convert one CSV file into a SQLite database with the fixed `data` table."""
 
 import argparse
 import csv
@@ -10,7 +10,8 @@ import tempfile
 from contextlib import closing
 from pathlib import Path
 
-TABLE_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+from app.schema import TABLE_NAME
+
 INTEGER = re.compile(r"[+-]?(?:0|[1-9][0-9]*)\Z")
 NUMBER = re.compile(
     r"[+-]?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]*)?|\.[0-9]+)"
@@ -64,7 +65,6 @@ def _coerce(value: str, data_type: str):
 def convert_csv(
     csv_path: Path,
     database_path: Path,
-    table: str,
     *,
     delimiter: str = ",",
     encoding: str = "utf-8-sig",
@@ -75,10 +75,6 @@ def convert_csv(
     csv_path = Path(csv_path)
     database_path = Path(database_path)
 
-    if not TABLE_NAME.fullmatch(table):
-        raise ValueError(
-            "Table name must use only letters, numbers, and underscores."
-        )
     if len(delimiter) != 1 or delimiter in "\r\n":
         raise ValueError("Delimiter must be one non-newline character.")
     if not csv_path.is_file():
@@ -150,11 +146,11 @@ def convert_csv(
         with closing(sqlite3.connect(temporary_path)) as connection:
             with connection:
                 connection.execute(
-                    f"CREATE TABLE {_quote_identifier(table)} ({definitions})"
+                    f"CREATE TABLE {_quote_identifier(TABLE_NAME)} ({definitions})"
                 )
                 if converted_rows:
                     connection.executemany(
-                        f"INSERT INTO {_quote_identifier(table)} "
+                        f"INSERT INTO {_quote_identifier(TABLE_NAME)} "
                         f"({columns}) VALUES ({placeholders})",
                         converted_rows,
                     )
@@ -180,11 +176,10 @@ def _parse_delimiter(value: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert one CSV file into a SQLite database."
+        description=f"Convert one CSV file into the fixed {TABLE_NAME!r} table."
     )
     parser.add_argument("csv_file", type=Path)
     parser.add_argument("database_file", type=Path)
-    parser.add_argument("--table", required=True)
     parser.add_argument("--delimiter", type=_parse_delimiter, default=",")
     parser.add_argument("--encoding", default="utf-8-sig")
     parser.add_argument(
@@ -206,7 +201,6 @@ def main() -> None:
         row_count, schema = convert_csv(
             args.csv_file,
             args.database_file,
-            args.table,
             delimiter=args.delimiter,
             encoding=args.encoding,
             infer_types=args.infer_types,
@@ -218,7 +212,7 @@ def main() -> None:
     columns = ", ".join(f"{name} {data_type}" for name, data_type in schema.items())
     print(
         f"Wrote {row_count} rows to {args.database_file} "
-        f"in table {args.table!r}."
+        f"in table {TABLE_NAME!r}."
     )
     print(f"Columns: {columns}")
 

@@ -8,9 +8,9 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAIError
 from pydantic import BaseModel, Field
 
-from .config import MAX_QUESTION_LENGTH, STATIC_DIR, TABLE_NAME
+from .config import MAX_QUESTION_LENGTH, STATIC_DIR
 from .database import describe_table, table_schema
-from .schema import EXAMPLE_QUESTIONS
+from .schema import EXAMPLE_QUESTIONS, TABLE_NAME
 from .workflow import question_graph
 
 

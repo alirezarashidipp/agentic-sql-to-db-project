@@ -28,15 +28,14 @@ os.environ.update(
         "OPENAI_API_KEY": "test-key",
         "OPENAI_MODEL": "test-model",
         "DATABASE_PATH": str(TEST_DATABASE),
-        "TABLE_NAME": DEFAULT_ENV["TABLE_NAME"],
         "MAX_QUESTION_LENGTH": DEFAULT_ENV["MAX_QUESTION_LENGTH"],
         "MAX_RESULT_ROWS": DEFAULT_ENV["MAX_RESULT_ROWS"],
     }
 )
 
 from app import api, database, workflow
-from app.config import MAX_QUESTION_LENGTH, STATIC_DIR, TABLE_NAME
-from app.schema import COLUMN_GUIDE
+from app.config import MAX_QUESTION_LENGTH, STATIC_DIR
+from app.schema import COLUMN_GUIDE, TABLE_NAME
 
 
 def tearDownModule():
@@ -169,7 +168,6 @@ class ContractTests(unittest.TestCase):
             }
         ]
         with (
-            patch.object(api, "TABLE_NAME", "runtime_table"),
             patch.object(api, "table_schema", return_value=columns),
             patch.object(api, "EXAMPLE_QUESTIONS", ("Runtime example?",)),
         ):
@@ -178,7 +176,7 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(
             payload,
             {
-                "table": "runtime_table",
+                "table": TABLE_NAME,
                 "columns": columns,
                 "examples": ["Runtime example?"],
                 "max_question_length": MAX_QUESTION_LENGTH,

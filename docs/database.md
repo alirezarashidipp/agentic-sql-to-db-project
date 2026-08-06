@@ -2,15 +2,16 @@
 
 ## Existing-file contract
 
-`DATABASE_PATH=employees.db` resolves relative to the project root. The tracked
+`DATABASE_PATH=main_datawarehouse.db` resolves relative to the project root. The tracked
 file already contains 100 fictional employees. The application never creates,
-migrates, or seeds a database.
+migrates, or seeds a database. The exposed table name is fixed as `data` in
+`app/schema.py`; it is not an environment setting.
 
 At startup, the application:
 
 1. requires `DATABASE_PATH` to point to an existing file;
 2. opens SQLite with URI `mode=ro`;
-3. verifies that `TABLE_NAME` exists;
+3. verifies that the `data` table exists;
 4. requires `COLUMN_GUIDE` keys to exactly match the live columns.
 
 Default schema:
@@ -32,9 +33,9 @@ the application:
 ```powershell
 .\.venv\Scripts\python.exe csv_to_sqlite.py `
   .\input.csv `
-  .\data-new.db `
-  --table data `
-  --infer-types
+  .\main_datawarehouse.db `
+  --infer-types `
+  --replace
 ```
 
 The tool creates one flat table. It does not infer primary keys, indexes,
@@ -47,8 +48,8 @@ unless the project's default dataset is deliberately changed.
 
 1. Create and populate the file in the external data process.
 2. Stop the application.
-3. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
-4. Update `COLUMN_GUIDE` to match the selected table's exact columns.
+3. Ensure its table is named `data` and set `DATABASE_PATH` in `.env.local`.
+4. Update `COLUMN_GUIDE` to match `data`'s exact columns.
 5. Update `EXAMPLE_QUESTIONS` and `EVAL_CASES` when the dataset changes.
 6. Restart the application.
 
@@ -72,6 +73,6 @@ Never commit real employee or personal data.
 
 ## Swap the database engine
 
-The modular boundary supports replacing SQLite files and tables, not replacing
-SQLite itself. PostgreSQL or another engine requires a new database adapter,
+The modular boundary supports replacing SQLite files that expose `data`, not
+replacing SQLite itself. PostgreSQL or another engine requires a new adapter,
 driver, query-validation rules, and tests.

@@ -2,8 +2,8 @@
 
 ## Purpose
 
-The application answers natural-language questions against one configured
-SQLite table while keeping schema knowledge, prompts, orchestration, database
+The application answers natural-language questions against the fixed SQLite
+table `data` while keeping schema knowledge, prompts, orchestration, database
 access, and presentation separate.
 
 ## Components
@@ -14,7 +14,7 @@ access, and presentation separate.
 | `app/api.py` | FastAPI routes, validation, and HTTP error mapping |
 | `app/workflow.py` | LangGraph state, nodes, and routing |
 | `prompts/` | Versioned question-review, SQL, and answer templates |
-| `app/schema.py` | Column guide and user-facing examples |
+| `app/schema.py` | Fixed table name, column guide, examples, and eval cases |
 | `app/database.py` | Existing-file validation, schema introspection, and guarded queries |
 | `app/config.py` | Required environment settings and OpenAI client |
 
@@ -32,7 +32,7 @@ flowchart LR
     DB --> Answer["Generate grounded answer"]
     Answer --> UI
     UI --> Shape["Inspect returned row shape"]
-    Shape -->|"compatible two-column result"| Chart["Offer Bar / Pie views"]
+    Shape -->|"compatible two-column result"| Chart["Render Bar; offer Pie when valid"]
 ```
 
 The workflow state is a `TypedDict` with three nodes. `review_question` loads
@@ -43,7 +43,7 @@ then `generate_answer`.
 ## Runtime sources of truth
 
 - Environment values: `.env.local`
-- Table contract: pre-provisioned SQLite metadata plus `COLUMN_GUIDE`
+- Table contract: fixed table `data`, SQLite metadata, and `COLUMN_GUIDE`
 - Prompt behavior: `prompts/*.yml`
 - Workflow behavior: `app/workflow.py`
 

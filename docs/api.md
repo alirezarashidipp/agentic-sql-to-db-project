@@ -9,14 +9,14 @@ Returns `static/index.html`.
 
 ## `GET /schema`
 
-Returns the configured table, its live SQLite columns combined with
+Returns the fixed `data` table, its live SQLite columns combined with
 `COLUMN_GUIDE`, example questions, and the maximum question length.
 
 Example response:
 
 ```json
 {
-  "table": "employees",
+  "table": "data",
   "columns": [
     {
       "name": "EMPLOYEE_ID",
@@ -54,7 +54,7 @@ Successful response:
   "normalized_question": "How many CODER employees are in MSW?",
   "status": "valid",
   "answer": "There are 20 coders in MSW.",
-  "sql": "SELECT COUNT(*) AS total FROM employees WHERE STATUS = 'CODER' AND DEPARTMENT = 'MSW'",
+  "sql": "SELECT COUNT(*) AS total FROM data WHERE STATUS = 'CODER' AND DEPARTMENT = 'MSW'",
   "rows": [{"total": 20}]
 }
 ```
@@ -63,7 +63,7 @@ Successful response:
 
 - `valid`: SQL was generated and executed.
 - `incomplete`: the response asks one clarification; `sql` is `null`.
-- `invalid`: the request is outside the configured table or requests a write;
+- `invalid`: the request is outside the fixed `data` table or requests a write;
   `sql` is `null`.
 
 ## Errors

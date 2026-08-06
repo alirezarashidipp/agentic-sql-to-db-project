@@ -1,8 +1,8 @@
 import sys
 
 from app.api import app
-from app.config import TABLE_NAME
 from app.database import describe_table, execute_sql
+from app.schema import TABLE_NAME
 
 
 def self_check() -> None:

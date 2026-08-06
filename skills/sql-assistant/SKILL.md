@@ -1,6 +1,6 @@
 ---
 name: sql-assistant-maintenance
-description: Safely maintain this schema-guided FastAPI, LangGraph, and SQLite learning project.
+description: Safely maintain this FastAPI, LangGraph, and SQLite schema-guided SQL application.
 ---
 
 # SQL Assistant Maintenance

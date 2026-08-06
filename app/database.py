@@ -3,8 +3,8 @@ import sqlite3
 from contextlib import closing
 from functools import cache
 
-from .config import DB_PATH, MAX_RESULT_ROWS, TABLE_NAME
-from .schema import COLUMN_GUIDE
+from .config import DB_PATH, MAX_RESULT_ROWS
+from .schema import COLUMN_GUIDE, TABLE_NAME
 
 TABLE_REFERENCE = re.compile(
     rf'(?is)\bFROM\s+(?:"{re.escape(TABLE_NAME)}"|{re.escape(TABLE_NAME)})(?=\s|$)'

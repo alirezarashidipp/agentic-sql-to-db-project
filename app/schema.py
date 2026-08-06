@@ -1,3 +1,6 @@
+TABLE_NAME = "data"
+
+
 COLUMN_GUIDE = {
     "EMPLOYEE_ID": {
         "description": "Unique numeric identifier for one employee.",
@@ -41,7 +44,8 @@ EVAL_CASES = {
             "id": "coder-count",
             "question": "How many coders are there?",
             "reference_sql": (
-                'SELECT COUNT(*) FROM "{table}" WHERE "STATUS" = \'CODER\''
+                f'SELECT COUNT(*) FROM "{TABLE_NAME}" '
+                'WHERE "STATUS" = \'CODER\''
             ),
             "compare": "scalar",
         },
@@ -49,7 +53,7 @@ EVAL_CASES = {
             "id": "department-counts",
             "question": "How many employees are in each department?",
             "reference_sql": (
-                'SELECT "DEPARTMENT", COUNT(*) FROM "{table}" '
+                f'SELECT "DEPARTMENT", COUNT(*) FROM "{TABLE_NAME}" '
                 'GROUP BY "DEPARTMENT"'
             ),
             "compare": "grouped",
@@ -58,7 +62,7 @@ EVAL_CASES = {
             "id": "mrm-data-engineers",
             "question": "List the names of data engineers in MRM.",
             "reference_sql": (
-                'SELECT "EMPLOYEE_NAME" FROM "{table}" '
+                f'SELECT "EMPLOYEE_NAME" FROM "{TABLE_NAME}" '
                 'WHERE "TITLE" = \'DATA ENGINEER\' '
                 'AND "DEPARTMENT" = \'MRM\''
             ),
@@ -70,7 +74,7 @@ EVAL_CASES = {
                 "List the five smallest employee IDs in ascending order."
             ),
             "reference_sql": (
-                'SELECT "EMPLOYEE_ID" FROM "{table}" '
+                f'SELECT "EMPLOYEE_ID" FROM "{TABLE_NAME}" '
                 'ORDER BY "EMPLOYEE_ID" ASC LIMIT 5'
             ),
             "compare": "ordered",
@@ -102,7 +106,7 @@ EVAL_CASES = {
         {
             "id": "scalar-answer",
             "question": "How many employees are there?",
-            "sql": 'SELECT COUNT(*) AS total FROM "{table}"',
+            "sql": f'SELECT COUNT(*) AS total FROM "{TABLE_NAME}"',
             "rows": [{"total": 3}],
             "reference_answer": "There are 3 employees.",
         },
@@ -110,7 +114,7 @@ EVAL_CASES = {
             "id": "grouped-answer",
             "question": "How many employees are in each department?",
             "sql": (
-                'SELECT "DEPARTMENT", COUNT(*) AS total FROM "{table}" '
+                f'SELECT "DEPARTMENT", COUNT(*) AS total FROM "{TABLE_NAME}" '
                 'GROUP BY "DEPARTMENT"'
             ),
             "rows": [

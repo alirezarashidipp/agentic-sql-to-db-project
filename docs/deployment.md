@@ -27,7 +27,7 @@ Compose:
 
 - binds the app to `127.0.0.1:8000`;
 - reads secrets at runtime from `.env.local`;
-- uses the prebuilt fictional `employees.db` included in the image;
+- uses the prebuilt fictional `main_datawarehouse.db` included in the image;
 - opens SQLite read-only and never creates or seeds it.
 
 Stop the app with:
@@ -43,10 +43,10 @@ docker build -t employee-sql-assistant .
 docker run --rm --env-file .env.local -p 127.0.0.1:8000:8000 employee-sql-assistant
 ```
 
-The image already contains `/app/employees.db` for the demo.
+The image already contains `/app/main_datawarehouse.db` for the demo.
 
-For another externally produced database, mount the file read-only and point
-`DATABASE_PATH` at its container location:
+For another externally produced database containing a table named `data`, mount
+the file read-only and point `DATABASE_PATH` at its container location:
 
 ```powershell
 $database = (Resolve-Path "C:\path\external.db").Path

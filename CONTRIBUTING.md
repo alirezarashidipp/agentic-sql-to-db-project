@@ -28,8 +28,9 @@ enough.
 
 Create or update the SQLite file outside this application. For a column change,
 update the external table and make `COLUMN_GUIDE` match its columns exactly.
-Verify `employees.db` contains sample data only, update `EXAMPLE_QUESTIONS`
-when needed, and restart the application after replacing the file.
+Keep the table name `data`. Verify `main_datawarehouse.db` contains sample data
+only, update `EXAMPLE_QUESTIONS` and `EVAL_CASES` when needed, and restart the
+application after replacing the file.
 
 ## Security changes
 

@@ -109,6 +109,7 @@ function offerCharts(dataRows) {
     button.hidden = !chartData.types.includes(button.dataset.chart);
   });
   chartActions.hidden = false;
+  renderChart("bar");
 }
 
 function renderBarChart() {

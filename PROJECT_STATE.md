@@ -1,11 +1,11 @@
 # Project State
 
-Last updated: 2026-08-05
+Last updated: 2026-08-06
 
 ## Status
 
-The learning-focused MVP is runnable locally and through Docker. A user can ask
-about one configured SQLite table, receive validation or clarification, inspect
+The schema-guided SQL application is runnable locally and through Docker. A
+user can ask about the fixed SQLite table `data`, receive validation or clarification, inspect
 the generated SQL, and get an answer grounded in the database result.
 
 ## Working capabilities
@@ -20,7 +20,8 @@ the generated SQL, and get an answer grounded in the database result.
   authorization.
 - The frontend renders columns and examples from `GET /schema`.
 - The frontend offers a persisted light/dark appearance toggle.
-- The frontend offers native Bar/Pie views after compatible two-column results.
+- The frontend automatically renders a native Bar chart after compatible
+  two-column results and offers Pie when supported.
 - Standard-library tests cover API/schema contracts, workflow routing,
   database guardrails, result comparison, answer inputs, and chart eligibility.
 - An opt-in DeepEval suite measures live question classification, generated SQL
@@ -34,17 +35,17 @@ the generated SQL, and get an answer grounded in the database result.
 
 ## Current data contract
 
-- Database asset: `employees.db`
-- Table: `employees`
+- Database asset: `main_datawarehouse.db`
+- Fixed table: `data`
 - Columns: `EMPLOYEE_ID`, `EMPLOYEE_NAME`, `DEPARTMENT`, `STATUS`, `TITLE`
 - Rows: 100 fictional sample employees
 
-`employees.db` is intentionally tracked because it contains demo data only.
+`main_datawarehouse.db` is intentionally tracked because it contains demo data only.
 The application and container never create, migrate, or seed it.
 
 ## Deliberate limits
 
-- One SQLite table is exposed at a time.
+- The application exposes only the fixed SQLite table `data`.
 - There is no migration system; schema changes require database recreation or
   an externally managed database.
 - Each request is independent; there is no conversation memory.

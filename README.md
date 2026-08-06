@@ -3,8 +3,8 @@
 Ask a question in plain English, turn it into guarded SQLite, and return an
 answer grounded in the query result.
 
-This learning project keeps the full path visible: FastAPI receives the
-question, LangGraph validates and completes it, OpenAI produces structured
+This schema-guided SQL application keeps the full path visible: FastAPI
+receives the question, LangGraph validates and completes it, OpenAI produces structured
 output, SQLite runs a read-only query, and a small HTML/CSS/JavaScript frontend
 shows the result.
 
@@ -15,7 +15,8 @@ shows the result.
 3. Generates one SQLite `SELECT` query.
 4. Applies application and SQLite-level read-only guardrails.
 5. Answers from the returned rows only.
-6. Offers Bar or Pie views only when the returned rows have a compatible shape.
+6. Automatically renders a Bar chart for compatible results and offers Pie when
+   supported.
 
 Try questions such as:
 
@@ -53,7 +54,7 @@ docker compose up --build
 ```
 
 Open <http://127.0.0.1:8000>. The image includes the existing fictional
-`employees.db` asset and opens it read-only. `.env.local` is supplied only at
+`main_datawarehouse.db` asset and opens it read-only. `.env.local` is supplied only at
 runtime.
 
 ## Configuration
@@ -64,8 +65,7 @@ All runtime settings are required and live in `.env.local`:
 | --- | --- | --- |
 | `OPENAI_API_KEY` | OpenAI authentication | Keep secret |
 | `OPENAI_MODEL` | Model used by OpenAI-backed workflow nodes | `gpt-5.6-sol` |
-| `DATABASE_PATH` | SQLite file, relative to the project or absolute | `employees.db` |
-| `TABLE_NAME` | Single table exposed to the assistant | `employees` |
+| `DATABASE_PATH` | SQLite file, relative to the project or absolute | `main_datawarehouse.db` |
 | `MAX_QUESTION_LENGTH` | API input limit | `500` |
 | `MAX_RESULT_ROWS` | Maximum rows returned from SQLite | `100` |
 
@@ -81,22 +81,23 @@ question
   -> run read-only SQLite query
   -> generate grounded answer
   -> inspect returned rows in the browser
-       -> compatible two-column result: offer valid Bar / Pie views
+       -> compatible two-column result: render Bar and offer valid chart options
 ```
 
-Prompts live in `prompts/*.yml`; table-specific column descriptions live in
-`app/schema.py`. The frontend discovers the configured table through
+Prompts live in `prompts/*.yml`; the fixed table name and dataset-specific
+column descriptions live in `app/schema.py`. The frontend discovers that
+table's live schema through
 `GET /schema`, so it does not hardcode employee columns.
 
 ## Safety boundary
 
 Generated SQL is untrusted. The backend accepts a single `SELECT` against the
-configured table, enables `PRAGMA query_only`, and installs a SQLite authorizer
+fixed `data` table, enables `PRAGMA query_only`, and installs a SQLite authorizer
 that denies other tables and write operations. These layers must remain in
 place even when prompts improve.
 
-This is still a learning/local application: `/ask` has no authentication, rate
-limiting, or query timeout. Do not expose it directly to the public internet.
+This is currently a local schema-guided SQL application: `/ask` has no
+authentication, rate limiting, or query timeout. Do not expose it directly to the public internet.
 See [docs/security.md](docs/security.md) for the threat model.
 
 ## Project map
@@ -122,7 +123,7 @@ See [docs/security.md](docs/security.md) for the threat model.
 |-- main.py
 |-- requirements.txt       # Pinned direct Python dependencies
 |-- requirements-eval.txt  # Optional DeepEval dependencies
-`-- employees.db            # Tracked prebuilt sample data asset
+`-- main_datawarehouse.db   # Tracked prebuilt sample data asset
 ```
 
 Directories for migrations, benchmarks, memory, or scripts are intentionally
@@ -138,9 +139,9 @@ tool:
 ```powershell
 .\.venv\Scripts\python.exe csv_to_sqlite.py `
   .\employees.csv `
-  .\employees-new.db `
-  --table employees `
-  --infer-types
+  .\main_datawarehouse.db `
+  --infer-types `
+  --replace
 ```
 
 The first row supplies the column names. Without `--infer-types`, every column
@@ -154,8 +155,9 @@ replacement happens only after the new database is complete.
 
 To use another SQLite asset:
 
-1. Create and populate the SQLite file in your separate data process.
-2. Set `DATABASE_PATH` and `TABLE_NAME` in `.env.local`.
+1. Create and populate the SQLite file in your separate data process. Its table
+   must be named `data`.
+2. Set only `DATABASE_PATH` in `.env.local` if the file path differs.
 3. Update `COLUMN_GUIDE`, `EXAMPLE_QUESTIONS`, and `EVAL_CASES` in
    `app/schema.py`.
 4. Make every `COLUMN_GUIDE` key exactly match a live table column.
