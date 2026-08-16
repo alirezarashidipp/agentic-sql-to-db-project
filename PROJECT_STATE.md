@@ -30,6 +30,8 @@ the generated SQL, and get an answer grounded in the database result.
   SQLite asset without changing the application's read-only runtime.
 - Python dependencies install with standard `pip` into a local `.venv`.
 - Docker and Compose include the existing fictional SQLite asset.
+- The Docker entry point accepts a platform-provided `PORT` and defaults to
+  `8000` locally.
 - GitHub Actions is configured to run deterministic checks without calling
   OpenAI.
 

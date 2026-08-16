@@ -45,6 +45,10 @@ docker run --rm --env-file .env.local -p 127.0.0.1:8000:8000 employee-sql-assist
 
 The image already contains `/app/main_datawarehouse.db` for the demo.
 
+The container listens on the `PORT` environment variable supplied by the
+hosting platform. When `PORT` is not set, it defaults to `8000` for local
+Docker runs.
+
 For another externally produced database containing a table named `data`, mount
 the file read-only and point `DATABASE_PATH` at its container location:
 

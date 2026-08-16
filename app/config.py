@@ -20,7 +20,7 @@ def load_local_env() -> None:
 def required_env(name: str) -> str:
     value = os.getenv(name)
     if not value:
-        raise ValueError(f"{name} is required in .env.local.")
+        raise ValueError(f"{name} environment variable is required.")
     return value
 
 
